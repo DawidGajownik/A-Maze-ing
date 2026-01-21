@@ -24,8 +24,8 @@ class Draw():
         return (transparency << 24) | (red << 16) | (green << 8) | blue
 
     def _put_block(cls, i: int, j: int, img: Image, color: int) -> None:
-        for x in range(img.thickness, img.scale - img.thickness + 1):
-            for y in range(img.thickness - 1, img.scale - img.thickness + 1):
+        for x in range(img.thickness + 2, img.scale - img.thickness - 2):
+            for y in range(img.thickness + 2, img.scale - img.thickness - 2):
                 cls._set_pixel(
                     img, i * img.scale + x + img.thickness,
                     j * img.scale + y + img.thickness, color)
@@ -35,8 +35,8 @@ class Draw():
         scale = img.prev_scale if out else img.scale
         for p in range((- thickness if j == 0 else 0), thickness):
             for pixel in range(*wall_range):
-                #m.mlx_pixel_put(mlx, win, i*scale + pixel + thickness,
-                #    j * scale + p + thickness, color)
+                #m.mlx_pixel_put(mlx, win, i*img.scale + pixel + img.thickness,
+                #    j * img.scale + p + img.thickness, color)
                 cls._set_pixel(
                     img, i*img.scale + pixel + img.thickness,
                     j * img.scale + p + img.thickness, 0xFFFFFFFF)
@@ -47,11 +47,11 @@ class Draw():
         thickness = img.prev_thickness if out else img.thickness
         scale = img.prev_scale if out else img.scale
         for p in range(
-                (-thickness if j == maze.height - 1 else 0)+1,
+                (-thickness if j == maze.height - 1 else 0),
                 thickness):
             for pixel in range(*w_range):
-                #m.mlx_pixel_put(mlx, win, i*scale + pixel + thickness,
-                    #(j + 1) * scale - p + thickness, color)
+                #m.mlx_pixel_put(mlx, win, i*img.scale + pixel + img.thickness,
+                #    (j + 1) * img.scale - p + img.thickness, color)
                 cls._set_pixel(
                     img, i*img.scale + pixel + img.thickness,
                     (j + 1) * img.scale - p + img.thickness, 0xFFFFFFFF)
@@ -61,8 +61,8 @@ class Draw():
         scale = img.prev_scale if out else img.scale
         for p in range((-thickness if i == 0 else 0), thickness):
             for pixel in range(*w_range):
-                #m.mlx_pixel_put(mlx, win, i*scale + thickness + p,
-                    #j * scale + pixel + thickness, color)
+                #m.mlx_pixel_put(mlx, win, i*img.scale + img.thickness + p,
+                #    j * img.scale + pixel + img.thickness, color)
                 cls._set_pixel(
                     img, i*img.scale + img.thickness + p,
                     j * img.scale + pixel + img.thickness, 0xFFFFFFFF)
@@ -76,8 +76,8 @@ class Draw():
             (-thickness if i == maze.width - 1 else 0), thickness
                 ):
             for pixel in range(*w_range):
-                #m.mlx_pixel_put(mlx, win, (i + 1)*scale - p + thickness,
-                    #j * scale + pixel + thickness, color)
+                #m.mlx_pixel_put(mlx, win, (i + 1)*img.scale - p + img.thickness,
+                #    j * img.scale + pixel + img.thickness, color)
                 cls._set_pixel(
                     img, (i + 1)*img.scale - p + img.thickness,
                     j * img.scale + pixel + img.thickness, 0xFFFFFFFF)
@@ -151,9 +151,11 @@ class Draw():
             cls._put_right(m, mlx, win.ptr, 0xFF000000, x, y, img, maze, wall_range, True)
 
     def draw_maze(
-            cls, x: int, y: int, m: Mlx, mlx: any, maze, img: Image, win: Window
+            cls, a: int, s: int, m: Mlx, mlx: any, maze, img: Image, win: Window
             ) -> None:
         img.data[:] = bytes([0, 0, 0, 255]) * (len(img.data)//4)
+        #m.mlx_destroy_image(mlx, img.ptr)
+        #img.ptr = mlx.mlx_new_image(mlx, img.width, img.height)
         wall_range = (-img.thickness+1, img.scale + img.thickness)
         for y in range(maze.height):
             for x in range(maze.width):
@@ -175,13 +177,18 @@ class Draw():
         #    cls._put_block(x, y, img, 0xFF0000FF)
         #if up and down and right and left:
         #    cls._put_block(x, y, img, 0xFFFF0000)
-                if (maze.map[y * maze.width + x] & (1 << Direction.NORTH.value)):
-                    cls._put_up(m, mlx, win.ptr, 0xFFFFFFFF, x, y, img, wall_range, False)
-                if (maze.map[y * maze.width + x] & (1 << Direction.SOUTH.value)):
-                    cls._put_down(m, mlx, win.ptr, 0xFFFFFFFF, x, y, img, maze, wall_range, False)
-                if (maze.map[y * maze.width + x] & (1 << Direction.WEST.value)):
-                    cls._put_left(m, mlx, win.ptr, 0xFFFFFFFF, x, y, img, wall_range, False)
-                if (maze.map[y * maze.width + x] & (1 << Direction.EAST.value)):
-                    cls._put_right(m, mlx, win.ptr, 0xFFFFFFFF, x, y, img, maze, wall_range, False)
-        m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, (win.width - img.width)//2, 0)
+                if len(maze.map) > 0:
+                    if maze.map[y * maze.width + x] == 16:
+                        cls._put_block(x, y, img, 0xFFFF0000)
+                    if (maze.map[y * maze.width + x] & (1 << Direction.NORTH.value)):
+                        cls._put_up(m, mlx, win.ptr, 0xFFFFFFFF, x, y, img, wall_range, False)
+                    if (maze.map[y * maze.width + x] & (1 << Direction.SOUTH.value)):
+                        cls._put_down(m, mlx, win.ptr, 0xFFFFFFFF, x, y, img, maze, wall_range, False)
+                    if (maze.map[y * maze.width + x] & (1 << Direction.WEST.value)):
+                        cls._put_left(m, mlx, win.ptr, 0xFFFFFFFF, x, y, img, wall_range, False)
+                    if (maze.map[y * maze.width + x] & (1 << Direction.EAST.value)):
+                        cls._put_right(m, mlx, win.ptr, 0xFFFFFFFF, x, y, img, maze, wall_range, False)
+        m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, 0)
+        m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xff000000)
+
             

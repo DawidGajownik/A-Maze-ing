@@ -2,7 +2,7 @@ from mlx import Mlx
 from objects import Image, Maze, Window
 from enums import Direction
 from .Draw import Draw
-from algotirhms import MazeGenerator
+from algorithms.MazeGenerator import MazeGenerator
 from random import randint
 from typing import List
 
@@ -23,37 +23,43 @@ class MazeVisualizer():
         self.y = -2
 
     def draw_slow(self, vars):
-        if self.bool:
-            img: Image = vars['img']
-            maze: Maze = vars['maze']
-            win: Window = vars['win']
-            mlx = vars['mlx']
-            draw: callable = vars['draw']
-            draw_out: callable = vars['draw_out']
-            m: Mlx = vars['m']
-            #if self.x < self.maze.width - 1 and self.y < self.maze.height - 2 and self.bool:
-                #self.x += 1
-                #draw_out(self.x, self.y+2, m, mlx, maze, img, win)
-            #elif self.y < self.maze.height - 2 and self.bool:
+        pass
+        #if self.bool:
+        #    generator = vars['generator']
+        #    gen = generator.create_maze(self.maze, 90)
+        #    for _ in gen:
+        #        self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win)
+        #    self.bool = False
+            #img: Image = vars['img']
+            #maze: Maze = vars['maze']
+            #win: Window = vars['win']
+            #mlx = vars['mlx']
+            #draw: callable = vars['draw']
+            #draw_out: callable = vars['draw_out']
+            #m: Mlx = vars['m']
+            ##if self.x < self.maze.width - 1 and self.y < self.maze.height - 2 and self.bool:
+            #    #self.x += 1
+            #    #draw_out(self.x, self.y+2, m, mlx, maze, img, win)
+            ##elif self.y < self.maze.height - 2 and self.bool:
+            ##    self.x = 0
+            ##    self.y += 1
+            #    #draw_out(self.x, self.y+2, m, mlx, maze, img, win)
+            #if self.x < self.maze.width - 1 and self.bool:
+            #    self.x += 1
+            #    draw(self.x, self.y, m, mlx, maze, img, win)
+            #    
+            #elif self.y < self.maze.height - 1 and self.bool:
             #    self.x = 0
             #    self.y += 1
-                #draw_out(self.x, self.y+2, m, mlx, maze, img, win)
-            if self.x < self.maze.width - 1 and self.bool:
-                self.x += 1
-                draw(self.x, self.y, m, mlx, maze, img, win)
-                
-            elif self.y < self.maze.height - 1 and self.bool:
-                self.x = 0
-                self.y += 1
-                draw(self.x, self.y, m, mlx, maze, img, win)
-            else:
-                self.x = -1
-                self.y = -2
-                img.prev_thickness = img.thickness
-                img.prev_scale = img.scale
-                self.bool = False
+            #    draw(self.x, self.y, m, mlx, maze, img, win)
+            #else:
+            #    self.x = -1
+            #    self.y = -2
+            #    img.prev_thickness = img.thickness
+            #    img.prev_scale = img.scale
+            #    self.bool = False
 
-    def draw(self):
+    def drawq(self, generator):
 
         self.m = Mlx()
         self.mlx = self.m.mlx_init()
@@ -67,14 +73,16 @@ class MazeVisualizer():
             'win': self.win,
             'maze': self.maze,
             'draw': self.draw.draw_maze,
+            'generator': generator,
             'draw_out': self.draw.draw_out
         }
         #wall_range = (-self.img.thickness+1, self.img.scale + self.img.thickness)
-        self.img.data[:] = bytes([0, 0, 0, 255]) * (len(self.img.data)//4)
         self.m.mlx_key_hook(self.win.ptr, self.key_hook, self.vars)
         self.m.mlx_loop_hook(self.mlx, self.draw_slow, self.vars)
+        gen = generator.create_maze(self.maze, 90)
+        for _ in gen:
+            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win)
         self.m.mlx_loop(self.mlx)
-        #self.draw.draw_maze(self.m, self.mlx, self.maze, self.img, self.win, wall_range)
 
     @staticmethod
     def close_window(vars: dict) -> int:

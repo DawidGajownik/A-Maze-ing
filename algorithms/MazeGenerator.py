@@ -26,14 +26,13 @@ class MazeGenerator:
                 if y < self.height - 1:
                     self.neighbors[c].append(c + self.width)
 
-    def create_maze(self, manager, seed: int) -> None:
+    def create_maze(self, manager, seed: int):
         self.prepare_data(seed, manager.width, manager.height)
 
         end = self.get_random_cell()
-        self.maze[end] = 0xF
+        self.maze[end] = 0b1111
         path_found: bool = False
         path: List[int] = []
-        i = 0
 
         while len(self.available_cells) > 0:
             # and i < 15:
@@ -51,13 +50,14 @@ class MazeGenerator:
                     self.clear_last_path(current_pos, path)
                 elif self.maze[current_pos] != 16:
                     path_found = True
-                i += 1
+                manager.map = self.maze
+                yield
 
             self.save_new_path(path)
             path.clear()
 
-        print(i)
         manager.map = self.maze
+        yield
 
     def get_maze_str(self):
         lines = []

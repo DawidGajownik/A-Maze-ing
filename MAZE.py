@@ -25,9 +25,9 @@ class MazeManager:
         self.generator.create_maze(self, seed)
         self.str_map = self.generator.get_maze_str()
 
-    def draw(self):
-        self.visualizer = MazeVisualizer(self, (1, 1), (49, 49))
-        self.visualizer.draw()
+    def draw(self, seed):
+        self.visualizer = MazeVisualizer(self, (1, 1), (14, 14))
+        self.visualizer.drawq(self.generator)
 
     def find(self):
         self.path = self.finder.find_path(self)
