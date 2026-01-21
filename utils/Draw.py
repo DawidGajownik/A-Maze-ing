@@ -178,6 +178,8 @@ class Draw():
         #if up and down and right and left:
         #    cls._put_block(x, y, img, 0xFFFF0000)
                 if len(maze.map) > 0:
+                    if maze.map[y * maze.width + x] != False:
+                        cls._put_block(x, y, img, 0xFF222222)
                     if maze.map[y * maze.width + x] == 16:
                         cls._put_block(x, y, img, 0xFFFF0000)
                     if (maze.map[y * maze.width + x] & (1 << Direction.NORTH.value)):

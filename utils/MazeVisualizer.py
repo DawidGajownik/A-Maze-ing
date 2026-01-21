@@ -59,7 +59,7 @@ class MazeVisualizer():
             #    img.prev_scale = img.scale
             #    self.bool = False
 
-    def drawq(self, generator):
+    def drawq(self, generator, seed):
 
         self.m = Mlx()
         self.mlx = self.m.mlx_init()
@@ -79,7 +79,8 @@ class MazeVisualizer():
         #wall_range = (-self.img.thickness+1, self.img.scale + self.img.thickness)
         self.m.mlx_key_hook(self.win.ptr, self.key_hook, self.vars)
         self.m.mlx_loop_hook(self.mlx, self.draw_slow, self.vars)
-        gen = generator.create_maze(self.maze, 90)
+        self.gen = generator
+        gen = self.gen.create_maze(self.maze, seed)
         for _ in gen:
             self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win)
         self.m.mlx_loop(self.mlx)
@@ -113,20 +114,11 @@ class MazeVisualizer():
         m: Mlx = vars['m']
         #print(keycode)
         if keycode == 110:
-            self.generator.__init__(randint(0,9999), 15, 15)
-            #self.generator.maze_random.seed(randint(0,9999))
-            #self.generator.maze: List[List[str]] = [["O"] * self.generator.width for _ in range(self.generator.height)]
-            self.generator.create_maze()
-            self.maze_str = self.generator.maze_to_string()
-            self.maze.content = self.maze_str
-            self.maze.width = len(self.maze.content.split('\n')[0])
-            self.maze.height = len(self.maze.content.split('\n'))
-            self.maze.prev_lines = self.maze.lines
-            self.maze.lines = [
-            list(line)
-            for line in self.maze.content.splitlines()
-            ]
+            gen = self.gen.create_maze(self.maze, randint(1, 9999))
             img.set_scale(self.maze)
+            for _ in gen:
+                self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win)
+            
             self.x = -1
             self.y = -2
             self.bool = True
