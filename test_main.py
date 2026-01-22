@@ -3,7 +3,7 @@ from random import randint
 
 
 def main() -> None:
-    manager = MazeManager(70, 70, (1, 1), (14, 14))
+    manager = MazeManager(150, 100, (1, 1), (14, 14))
 
    # manager.generate(90)
    # print(manager.str_map)

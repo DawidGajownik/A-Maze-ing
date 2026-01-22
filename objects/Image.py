@@ -4,7 +4,12 @@ from .Maze import Maze
 
 
 class Image():
-    def __init__(self, mlx: Mlx, mlx_ptr: any, win: Window, maze: Maze):
+    def __init__(self, mlx: Mlx, mlx_ptr: any, win: Window, maze: Maze,
+                 width: int | None = None,
+                 height: int | None = None
+                 ):
+        self.base_width = width if width is not None else win.width
+        self.base_height = height if height is not None else win.height
         self.height = win.height
         self.width = win.width
         self.set_scale(maze)
