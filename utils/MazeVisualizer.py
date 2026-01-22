@@ -22,7 +22,18 @@ class MazeVisualizer():
         self.y = -2
 
     def draw_slow(self, vars):
-        pass
+        if not self.bool:
+            return
+        try:
+            found = next(self.generator)
+        #gen = self.gen.create_maze(self.maze, self.seed)
+        #if self.bool:
+            #for found in gen:
+            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.imgs, found)
+            #self.bool = False
+        except StopIteration as e:
+            print(e)
+            self.bool = False
         # if self.bool:
         #    generator = vars['generator']
         #    gen = generator.create_maze(self.maze, 90)
@@ -80,9 +91,9 @@ class MazeVisualizer():
             i: self._new_image_dict(self.m, self.img.width, self.img.height, i)
             for i in range(17)
         }
-
+        self.gen = generator
         self.imgs[False] = self._new_image_dict(self.m, self.img.width, self.img.height, 20)
-
+        self.seed = seed
         self.draw = Draw()
         self.vars = {
             'm': self.m,
@@ -96,13 +107,15 @@ class MazeVisualizer():
         }
         #wall_range = (-self.img.thickness+1, self.img.scale + self.img.thickness)
         self.m.mlx_key_hook(self.win.ptr, self.key_hook, self.vars)
-        self.m.mlx_loop_hook(self.mlx, self.draw_slow, self.vars)
         self.bool = True
+        self.m.mlx_loop_hook(self.mlx, self.draw_slow, self.vars)
         self.gen = generator
-        gen = self.gen.create_maze(self.maze, seed)
-        for _ in gen:
-            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.imgs)
+        self.generator = self.gen.create_maze(self.maze, seed)
+        #for found in gen:
+        #    self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.imgs, found)
         self.m.mlx_loop(self.mlx)
+
+
 
     @staticmethod
     def close_window(vars: dict) -> int:
@@ -135,8 +148,8 @@ class MazeVisualizer():
         if keycode == 110:
             gen = self.gen.create_maze(self.maze, randint(1, 9999))
             img.set_scale(self.maze)
-            #for _ in gen:
-            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.imgs)
+            for found in gen:
+                self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.imgs, found)
             
             self.x = -1
             self.y = -2
@@ -186,10 +199,10 @@ class MazeVisualizer():
         #    if maze.pacman.y < maze.height - 1:
         #        maze.pacman.y += 1
         #        print("S", end="", flush=True)
-        if keycode in (
-            #65451, 
-            65453, 65451, 65361, 65362, 65363, 65364):
-            draw(self.x, self.y, m, mlx, maze, img, win, self.imgs)
+        #if keycode in (
+        #    #65451, 
+        #    65453, 65451, 65361, 65362, 65363, 65364):
+        #    self.bool = True
         if keycode == 65307:
             m.mlx_destroy_window(mlx, win.ptr)
             m.mlx_loop_exit(mlx)

@@ -29,9 +29,9 @@ class Draw():
         g = (color >> 8) & 0xFF
         r = color & 0xFF
 
-        start_x = i * img.scale + img.thickness + 2
-        start_y = j * img.scale + img.thickness + 2
-        size = img.scale - img.thickness * 2 - 4
+        start_x = i * img.scale + img.thickness
+        start_y = j * img.scale + img.thickness
+        size = img.scale - img.thickness * 2
 
         row = bytes([r, g, b, a]) * size
 
@@ -40,56 +40,101 @@ class Draw():
             img.data[offset: offset + size * 4] = row
 
     def _put_up(cls, m: Mlx, mlx: any, win: Window, color: int, i: int, j: int, img: Image, wall_range: tuple, out: bool) -> None:
-        thickness = img.prev_thickness if out else img.thickness
-        scale = img.prev_scale if out else img.scale
-        for p in range((- thickness if j == 0 else 0), thickness):
+        a = (color >> 24) & 0xFF
+        b = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        r = color & 0xFF
+
+        pixel_bytes = bytes([r, g, b, a])
+
+        start_y = j * img.scale + img.thickness
+        start_x_base = i * img.scale + img.thickness
+        for p in range((- img.thickness if j == 0 else 0), img.thickness):
+            y = start_y + p
+            if y < 0 or y >= img.height:
+                continue
+
             for pixel in range(*wall_range):
-                #m.mlx_pixel_put(mlx, win, i*img.scale + pixel + img.thickness,
-                #    j * img.scale + p + img.thickness, color)
-                cls._set_pixel(
-                    img, i*img.scale + pixel + img.thickness,
-                    j * img.scale + p + img.thickness, 0xFFFFFFFF)
+                x = start_x_base + pixel
+                if x < 0 or x >= img.width:
+                    continue
+
+                offset = (y * img.width + x) * 4
+                img.data[offset:offset + 4] = pixel_bytes
 
     def _put_down(cls, m: Mlx, mlx: any, win: Window, color: int,
             i: int, j: int, img: Image, maze: Maze, w_range: tuple, out: bool
             ) -> None:
-        thickness = img.prev_thickness if out else img.thickness
-        scale = img.prev_scale if out else img.scale
+        a = (color >> 24) & 0xFF
+        b = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        r = color & 0xFF
+        pixel_bytes = bytes((r, g, b, a))
+    
+        start_x_base = i * img.scale + img.thickness
         for p in range(
-                (-thickness if j == maze.height - 1 else 0),
-                thickness):
+                (-img.thickness if j == maze.height - 1 else 0),
+                img.thickness):
+            y = (j + 1) * img.scale - p + img.thickness
+            if y < 0 or y >= img.height:
+                continue
+
             for pixel in range(*w_range):
-                #m.mlx_pixel_put(mlx, win, i*img.scale + pixel + img.thickness,
-                #    (j + 1) * img.scale - p + img.thickness, color)
-                cls._set_pixel(
-                    img, i*img.scale + pixel + img.thickness,
-                    (j + 1) * img.scale - p + img.thickness, 0xFFFFFFFF)
+                x = start_x_base + pixel
+                if x < 0 or x >= img.width:
+                    continue
+
+                offset = (y * img.width + x) * 4
+                img.data[offset:offset + 4] = pixel_bytes
 
     def _put_left(cls, m: Mlx, mlx: any, win: Window, color: int, i: int, j: int, img: Image, w_range: tuple, out: bool) -> None:
-        thickness = img.prev_thickness if out else img.thickness
-        scale = img.prev_scale if out else img.scale
-        for p in range((-thickness if i == 0 else 0), thickness):
+        a = (color >> 24) & 0xFF
+        b = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        r = color & 0xFF
+        pixel_bytes = bytes((r, g, b, a))
+
+        start_y_base = j * img.scale + img.thickness
+        x_base = i * img.scale + img.thickness
+        for p in range((-img.thickness if i == 0 else 0), img.thickness):
+            x = x_base + p
+            if x < 0 or x >= img.width:
+                continue
+
             for pixel in range(*w_range):
-                #m.mlx_pixel_put(mlx, win, i*img.scale + img.thickness + p,
-                #    j * img.scale + pixel + img.thickness, color)
-                cls._set_pixel(
-                    img, i*img.scale + img.thickness + p,
-                    j * img.scale + pixel + img.thickness, 0xFFFFFFFF)
+                y = start_y_base + pixel
+                if y < 0 or y >= img.height:
+                    continue
+
+                offset = (y * img.width + x) * 4
+                img.data[offset:offset + 4] = pixel_bytes
 
     def _put_right(cls, m: Mlx, mlx: any, win: Window, color: int,
             i: int, j: int, img: Image, maze: Maze, w_range: tuple, out: bool
             ) -> None:
-        thickness = img.prev_thickness if out else img.thickness
-        scale = img.prev_scale if out else img.scale
+        a = (color >> 24) & 0xFF
+        b = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        r = color & 0xFF
+        pixel_bytes = bytes((r, g, b, a))
+
+        start_y_base = j * img.scale + img.thickness
+
         for p in range(
-            (-thickness if i == maze.width - 1 else 0), thickness
-                ):
+            (-img.thickness if i == maze.width - 1 else 0),
+            img.thickness
+        ):
+            x = (i + 1) * img.scale - p + img.thickness
+            if x < 0 or x >= img.width:
+                continue
+
             for pixel in range(*w_range):
-                #m.mlx_pixel_put(mlx, win, (i + 1)*img.scale - p + img.thickness,
-                #    j * img.scale + pixel + img.thickness, color)
-                cls._set_pixel(
-                    img, (i + 1)*img.scale - p + img.thickness,
-                    j * img.scale + pixel + img.thickness, 0xFFFFFFFF)
+                y = start_y_base + pixel
+                if y < 0 or y >= img.height:
+                    continue
+
+                offset = (y * img.width + x) * 4
+                img.data[offset:offset + 4] = pixel_bytes
 
     @classmethod
     def _offset(
@@ -161,16 +206,24 @@ class Draw():
 
 
     def draw_maze(
-            cls, a: int, s: int, m: Mlx, mlx: any, maze, img: Image, win: Window, imgs: dict
+            cls, a: int, s: int, m: Mlx, mlx: any, maze, img: Image, win: Window, imgs: dict, found
             ) -> None:
-        img.data[:] = bytes([0, 0, 0, 255]) * (len(img.data)//4)
+        img.data[:] = bytes([50, 50, 50, 255]) * (len(img.data)//4)
         wall_range = (-img.thickness+1, img.scale + img.thickness)
+        for y in range(maze.height):
+            for x in range (maze.width):
+                cls._put_up(m, mlx, win.ptr, 0xFF202020, x, y, img, wall_range, False)
+                cls._put_down(m, mlx, win.ptr, 0xFF202020, x, y, img, maze, wall_range, False)
+                cls._put_left(m, mlx, win.ptr, 0xFF202020, x, y, img, wall_range, False)
+                cls._put_right(m, mlx, win.ptr, 0xFF202020, x, y, img, maze, wall_range, False)
         for y in range(maze.height):
             for x in range(maze.width):
                 #m.mlx_put_image_to_window(mlx, win.ptr, imgs[maze.map[y * maze.width + x]]['img'], x*img.scale, y*img.scale)
                 if len(maze.map) > 0:
-                    if maze.map[y * maze.width + x] != False:
-                        cls._put_block(x, y, img, 0xFF222222)
+                    if (y * maze.width + x) in found:
+                        cls._put_block(x, y, img, 0xFF000000)
+                    if maze.map[y * maze.width + x] == 15:
+                        cls._put_block(x, y, img, 0xFF0000FF)
                     if maze.map[y * maze.width + x] == 16:
                         cls._put_block(x, y, img, 0xFFFF0000)
                     if (maze.map[y * maze.width + x] & (1 << Direction.NORTH.value)):

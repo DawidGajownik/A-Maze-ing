@@ -1,6 +1,7 @@
 from random import Random
 from typing import List, Union, Set
 from enums import Direction
+import math
 
 
 class MazeGenerator:
@@ -11,33 +12,77 @@ class MazeGenerator:
         self.available_cells: Set[int] = {x for x in range(width * height)}
         self.width = width
         self.height = height
-        self.neighbors: List[List[int]] = [[] for _ in range(width *
-                                                             height)]
+        self.found: Set[int] = set()
+
+        self.set_42()
+        self.set_neighbors()
+        self.remove_42_from_available()
+
+    def set_42(self):
+        pass
+        x = self.width // 2
+        y = self.height // 2
+
+        central_cell = y * self.width + x
+
+        self.maze[central_cell - 1] = 0xF
+        self.maze[central_cell - 2] = 0xF
+        self.maze[central_cell - 3] = 0xF
+        self.maze[central_cell - 3 - self.width] = 0xF
+        self.maze[central_cell - 3 - self.width * 2] = 0xF
+        self.maze[central_cell - 1 + self.width] = 0xF
+        self.maze[central_cell - 1 + self.width * 2] = 0xF
+        self.maze[central_cell + 1] = 0xF
+        self.maze[central_cell + 2] = 0xF
+        self.maze[central_cell + 3] = 0xF
+        self.maze[central_cell + 3 - self.width] = 0xF
+        self.maze[central_cell + 3 - self.width * 2] = 0xF
+        self.maze[central_cell + 2 - self.width * 2] = 0xF
+        self.maze[central_cell + 1 - self.width * 2] = 0xF
+        self.maze[central_cell + 1 + self.width] = 0xF
+        self.maze[central_cell + 1 + self.width * 2] = 0xF
+        self.maze[central_cell + 2 + self.width * 2] = 0xF
+        self.maze[central_cell + 3 + self.width * 2] = 0xF
+
+    def set_neighbors(self):
+        self.neighbors: List[List[int]] = [[] for _ in range(self.width *
+                                                             self.height)]
 
         for y in range(self.height):
             for x in range(self.width):
                 c = y * self.width + x
-                if x > 0:
+                if x > 0 and self.maze[c - 1] != 0xF:
                     self.neighbors[c].append(c - 1)
-                if x < self.width - 1:
+                if x < self.width - 1 and self.maze[c + 1] != 0xF:
                     self.neighbors[c].append(c + 1)
-                if y > 0:
+                if y > 0 and self.maze[c - self.width] != 0xF:
                     self.neighbors[c].append(c - self.width)
-                if y < self.height - 1:
+                if y < self.height - 1 and self.maze[c + self.width] != 0xF:
                     self.neighbors[c].append(c + self.width)
+
+    def remove_42_from_available(self):
+        for i, cell in enumerate(self.maze):
+            if cell == 0xF:
+                self.available_cells.remove(i)
 
     def create_maze(self, manager, seed: int):
         self.prepare_data(seed, manager.width, manager.height)
 
         end = self.get_random_cell()
         self.maze[end] = 0b1111
+        self.found.add(end)
         path_found: bool = False
         path: List[int] = []
+        # visualisation_tempo: int = max(1, (self.width * self.height) // 100)
+        i: int = 0
 
-        while len(self.available_cells) > 0:
-            # and i < 15:
+        while self.available_cells:
             start = self.get_random_cell()
             path.append(start)
+
+            num_cells = max(1, len(self.available_cells))
+            visualisation_tempo: int = max(
+                3, int((num_cells * math.log10(num_cells)) / 1000))
 
             self.maze[start] = 16
             current_pos = start
@@ -51,13 +96,16 @@ class MazeGenerator:
                 elif self.maze[current_pos] != 16:
                     path_found = True
                 manager.map = self.maze
-                yield
+
+                i += 1
+                if i % visualisation_tempo == 0:
+                    yield self.found
 
             self.save_new_path(path)
             path.clear()
 
         manager.map = self.maze
-        yield
+        yield self.found
 
     def get_maze_str(self):
         lines = []
@@ -85,6 +133,9 @@ class MazeGenerator:
             i += 1
             current = path[i]
             self.put_walls_in_cell(previous, current, direction)
+
+        for cell in path:
+            self.found.add(cell)
 
         return len(path) + 1
 
