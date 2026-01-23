@@ -8,13 +8,14 @@ class Image():
                  width: int | None = None,
                  height: int | None = None
                  ):
-        self.base_width = width if width is not None else win.width
-        self.base_height = height if height is not None else win.height
         self.height = win.height
-        self.width = win.width
+        self.width = win.width // 8 * 7
         self.set_scale(maze)
-        self.height = maze.height * self.scale + 16
-        self.width = maze.width * self.scale + 16
+        self.height = height if height is not None else maze.height * self.scale + 2
+        self.width = width if width is not None else maze.width * self.scale + 2
+        self.height = height if height is not None else win.height
+        self.width = width if width is not None else win.width  // 8 * 7
+
         self.ptr = mlx.mlx_new_image(mlx_ptr, self.width, self.height)
         (self.data, self.bits_per_pixel, self.size_line,
             self.theformat) = mlx.mlx_get_data_addr(self.ptr)
@@ -26,4 +27,4 @@ class Image():
         self.scale = min(
             self.width // maze.width,
             self.height // maze.height
-        ) - 1
+        )
