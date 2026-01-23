@@ -25,7 +25,7 @@ class MazeVisualizer():
             'Block found': bytes([0, 0, 0, 255]),
             'Block not found': bytes([30, 30, 30, 255]),
             'Snake': bytes([0, 0, 255, 255]),
-            'Background': bytes([255, 255, 255, 255]),
+            'Background': bytes([25, 25, 25, 255]),
         }
         self.palette = [
             # rząd 1
@@ -100,7 +100,7 @@ class MazeVisualizer():
         segment_bytes = leng // 32
         rows_in_segment = segment_bytes // (width * 4)
 
-        color_left = bytes([255, 0, 0, 255])
+        color_left = self.colors['Background']
         self.segment_width = int((float(width) - 8.5 * float(self.segment_height)) // 8) - 2
 
         for i in range(32):
@@ -195,21 +195,17 @@ class MazeVisualizer():
                                 color_left * width
                         )[:width * 4]
 
-    def drawq(self, generator, seed):
+    def darken(self, color: bytes, factor: float) -> bytes:
+        r, g, b, a = color
+        r = int(r * factor)
+        g = int(g * factor)
+        b = int(b * factor)
+        return bytes([r, g, b, a])
 
-        self.m = Mlx()
-        self.mlx = self.m.mlx_init()
-        self.win = Window(self.m, self.mlx, "window")
-        self.img = Image(self.m, self.mlx, self.win, self.maze)
-        self.background_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 8 * 7, self.win.height)
-        self.background_img_data = self.m.mlx_get_data_addr(self.background_img.ptr)[0]
-        self.background_img_data[:] = bytes([255, 255, 255, 255]) * (len(self.background_img_data)//4)
+    def show_menu(self):
+        self.background_img_data[:] = self.colors['Background'] * (len(self.background_img_data) // 4)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
-        self.menu_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 8, self.win.height)
-        self.menu_img_data = self.m.mlx_get_data_addr(self.menu_img.ptr)[0]
-        self.menu_img_data[:] = bytes([25, 25, 25, 255]) * (len(self.menu_img_data) // 4)
-        self.colors_block = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 16, self.win.height // 64*7)
-        self.colors_block_data = self.m.mlx_get_data_addr(self.colors_block.ptr)[0]
+        self.menu_img_data[:] = self.darken(self.colors['Background'], 0.6) * (len(self.menu_img_data) // 4)
         self.fill_striped_block()
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.menu_img.ptr, self.win.width // 8 * 7, 0)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.colors_block.ptr, self.win.width // 64 * 60, self.win.height // 64)
@@ -227,6 +223,23 @@ class MazeVisualizer():
         self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64*41, 0xFFFFFFFF, "Snake")
         self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64*49, 0xFFFFFFFF, "Background")
 
+
+    def drawq(self, generator, seed):
+
+        self.m = Mlx()
+        self.mlx = self.m.mlx_init()
+        self.win = Window(self.m, self.mlx, "window")
+        self.img = Image(self.m, self.mlx, self.win, self.maze)
+        self.background_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 8 * 7, self.win.height)
+        self.background_img_data = self.m.mlx_get_data_addr(self.background_img.ptr)[0]
+        self.background_img_data[:] = self.colors['Background'] * (len(self.background_img_data)//4)
+        self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+        self.menu_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 8, self.win.height)
+        self.menu_img_data = self.m.mlx_get_data_addr(self.menu_img.ptr)[0]
+        self.menu_img_data[:] = (self.colors['Background'][:3] + bytes([128])) * (len(self.menu_img_data) // 4)
+        self.colors_block = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 16, self.win.height // 64*7)
+        self.colors_block_data = self.m.mlx_get_data_addr(self.colors_block.ptr)[0]
+        self.show_menu()
         self.gen = generator
         self.seed = seed
         self.draw = Draw()
@@ -315,7 +328,13 @@ class MazeVisualizer():
                         row = int(y_rel // block_width)
                         col = int(x_rel // block_width)
                         self.colors[name] = self.palette[row*8+col]
-                        print(f"{name} | row={row} | col={col}")
+                        if name == 'Background':
+                            self.background_img_data[:] = self.colors['Background'] * (len(self.background_img_data)//4)
+                            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+                            self.menu_img_data[:] = self.colors['Background'] * (len(self.menu_img_data) // 4)
+                            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.menu_img.ptr,
+                                                           self.win.width // 8 * 7, 0)
+                            self.show_menu()
 
     def key_hook(self, keycode, vars):
         img: Image = vars['img']

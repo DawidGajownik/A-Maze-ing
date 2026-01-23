@@ -13,8 +13,8 @@ class Image():
         self.set_scale(maze)
         self.height = height if height is not None else maze.height * self.scale + 2
         self.width = width if width is not None else maze.width * self.scale + 2
-        self.height = height if height is not None else win.height
-        self.width = width if width is not None else win.width  // 8 * 7
+        #self.height = height if height is not None else win.height
+        #self.width = width if width is not None else win.width  // 8 * 7
 
         self.ptr = mlx.mlx_new_image(mlx_ptr, self.width, self.height)
         (self.data, self.bits_per_pixel, self.size_line,
