@@ -178,8 +178,21 @@ class Draw():
     def draw_maze(
             cls, a: int, s: int, m: Mlx, mlx: any, maze, img: Image, win: Window, found, colors: dict
             ) -> None:
+        row_pixels = img.width
+        fill_pixels = maze.width * img.scale
+        rest_pixels = row_pixels - fill_pixels
 
-        img.data[:] = colors['Grid 2'] * (len(img.data)//4)
+        for row in range(maze.height * img.scale + 1):
+            row_start = row * img.width * 4 + 4
+            row_end = row_start + img.width * 4
+
+            # Zamaluj pierwszą część
+            img.data[row_start:row_start + fill_pixels * 4] = colors['Grid 2'] * fill_pixels
+
+            # Zamaluj resztę wiersza
+            img.data[row_start + fill_pixels * 4: row_end] = colors['Background'] * rest_pixels
+
+        #img.data[:maze.width*img.scale] = colors['Grid 2'] * (len(img.data)//4)
         wall_range = (-img.thickness+1, img.scale + img.thickness)
         for y in range(maze.height):
             for x in range (maze.width):

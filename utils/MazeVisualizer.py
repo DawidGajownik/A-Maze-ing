@@ -202,6 +202,10 @@ class MazeVisualizer():
         b = int(b * factor)
         return bytes([r, g, b, a])
 
+    def transparent(self, color: bytes, level: int) -> bytes:
+        r, g, b, a = color
+        return bytes([r, g, b, level])
+
     def show_menu(self):
         self.background_img_data[:] = self.colors['Background'] * (len(self.background_img_data) // 4)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
@@ -327,7 +331,7 @@ class MazeVisualizer():
                     if 0 <= y_rel < block_width * 8 and 0 <= x_rel < block_width * 8:
                         row = int(y_rel // block_width)
                         col = int(x_rel // block_width)
-                        self.colors[name] = self.palette[row*8+col]
+                        self.colors[name] = self.transparent(self.palette[row*8+col], 10)
                         if name == 'Background':
                             self.background_img_data[:] = self.colors['Background'] * (len(self.background_img_data)//4)
                             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
