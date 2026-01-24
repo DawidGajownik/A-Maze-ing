@@ -1,5 +1,3 @@
-from debian.debtags import output
-
 from MAZE import MazeManager
 from random import randint
 

@@ -1,8 +1,5 @@
 from copy import copy
 
-from PIL.ImageChops import offset
-from xdg.IconTheme import themes
-
 from mlx import Mlx
 from objects import Image, Maze, Window
 from enums import Direction
@@ -455,49 +452,51 @@ class MazeVisualizer():
         width = self.colors_block.width
         line_size = len(data) // height
         tt = 2
-        t = height//10
+        t = height//10 - 3
         l_size = line_size//4
         wid = (l_size - 16*tt)//8
         sequence = bytes()
+        #background = bytes([255,0,0,255])
+        background = bytes([0,0,0,0])
         for i in range (8):
             sequence = sequence + ((
                         bytes([0,0,0,0]) * (l_size * tt) +  #odstep y
                         (
                             #biała linia y
-                                (bytes([0, 0, 0, 0]) * tt +  # odstęp x
+                                (background * tt +  # odstęp x
                                  bytes([255, 255, 255, 255]) * wid +  # bialy pasek
-                                 bytes([0, 0, 0, 0]) * tt) * 8 +  # odstep x
-                                (bytes([0, 0, 0, 0]) * (l_size - 8 * (tt * 2 + wid))) #dopelłnij
+                                 background * tt) * 8 +  # odstep x
+                                (background * (l_size - 8 * (tt * 2 + wid))) #dopelłnij
                         )
                         +
                         (
                             #wypełnienie
                             (
                                     b''.join(
-                                        bytes([0, 0, 0, 0]) * tt +
+                                        background * tt +
                                         bytes([255, 255, 255, 255]) * 1 +
                                         self.palette[i * 8 + j] * (wid - 2) +
                                         bytes([255, 255, 255, 255]) * 1 +
-                                        bytes([0, 0, 0, 0]) * tt
+                                        background * tt
                                         for j in range(8)
                                     )
                                     +
-                                    bytes([0, 0, 0, 0]) * (l_size - 8 * (tt * 2 + wid))
+                                    background * (l_size - 8 * (tt * 2 + wid))
                             )
                         )
                         * t +  #ilosc multiplikacji segmentu
                         (
                             # biała linia y
                                 (
-                                bytes([0, 0, 0, 0]) * tt +  # odstęp x
+                                background * tt +  # odstęp x
                                 bytes([255, 255, 255, 255]) * wid +  # bialy pasek
-                                bytes([0, 0, 0, 0]) * tt) * 8 +  # odstep x
-                                bytes([0, 0, 0, 0]) * (l_size - 8 * (tt * 2 + wid)) #dopełnij
+                                background * tt) * 8 +  # odstep x
+                                background * (l_size - 8 * (tt * 2 + wid)) #dopełnij
                         ) +
-                        bytes([0, 0, 0, 0]) * (l_size * tt) #odstep y
+                        background * (l_size * tt) #odstep y
                 ))
         data[:] = ( sequence
-                + bytes([0, 0, 0, 0]) * l_size + b'\x00' * len(data)
+                + background * l_size + b'\x255' * len(data)
             )[:leng]
         self.segment_height = self.colors_block.height // 32
         self.segment_width = max(1, int((width - 8.5 * self.segment_height) // 8) - 2)
@@ -628,20 +627,20 @@ class MazeVisualizer():
                     len(self.menu_img_data) // 4)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.menu_img.ptr, self.win.width // 8 * 7, 0)
 
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64, 0xFFFFFFFF,
-        #                       "42")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 9, 0xFFFFFFFF,
-        #                       "Gr 1")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 17, 0xFFFFFFFF,
-        #                       "Gr 2")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 25, 0xFFFFFFFF,
-        #                       "B 1")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 33, 0xFFFFFFFF,
-        #                       "B 2")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 41, 0xFFFFFFFF,
-        #                       "S")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 49, 0xFFFFFFFF,
-        #                       "Bckg")
+        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64, 0xFFFFFFFF,
+                              "42")
+        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 9, 0xFFFFFFFF,
+                              "Gr 1")
+        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 17, 0xFFFFFFFF,
+                              "Gr 2")
+        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 25, 0xFFFFFFFF,
+                              "B 1")
+        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 33, 0xFFFFFFFF,
+                              "B 2")
+        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 41, 0xFFFFFFFF,
+                              "S")
+        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 49, 0xFFFFFFFF,
+                              "Bckg")
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.colors_block.ptr, self.win.width // 64 * 60,
                                        self.win.height // 64)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.colors_block.ptr, self.win.width // 64 * 60,
@@ -677,19 +676,33 @@ class MazeVisualizer():
                                        self.win.height // 64 * 41)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.colors_block.ptr, self.win.width // 64 * 60,
                                        self.win.height // 64 * 49)
+        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64, 0xFFFFFFFF,
+        #                       "42")
+        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 9, 0xFFFFFFFF,
+        #                       "Gr 1")
+        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 17, 0xFFFFFFFF,
+        #                       "Gr 2")
+        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 25, 0xFFFFFFFF,
+        #                       "B 1")
+        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 33, 0xFFFFFFFF,
+        #                       "B 2")
+        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 41, 0xFFFFFFFF,
+        #                       "S")
+        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 49, 0xFFFFFFFF,
+        #                       "Bckg")
         #self.strings_background_data[:] = self.darken((self.colors['Background'][:3] + bytes([255])), 0.6) * (len(self.strings_background_data) // 4)
         #self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.strings_background.ptr, self.win.width // 64 * 57, self.win.height // 64 * 57)
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 57, 0xFFFFFFFF,
-        #                         f"S = {self.seed}")
         # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 58, 0xFFFFFFFF,
-        #                       "X = " + str(self.maze.width) + "(l/ri)")
+        #                         f"S = {self.seed}")
         # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 59, 0xFFFFFFFF,
+        #                       "X = " + str(self.maze.width) + "(l/ri)")
+        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 56, 0xFFFFFFFF,
         #                       "Y = " + str(self.maze.height) + "(up/dn)")
-        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 60, 0xFFFFFFFF,
-                              "T = " + str(self.transparency) + "(w/s)")
         self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 61, 0xFFFFFFFF,
-                              "Thm = " + self.themes[self.theme_idx]['name'] + "(a/d)")
+                              "T = " + str(self.transparency) + "(w/s)")
         self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 62, 0xFFFFFFFF,
+                              "Thm = " + self.themes[self.theme_idx]['name'] + "(a/d)")
+        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 63, 0xFFFFFFFF,
                               "Th = " + str(self.img.thickness) + "(+/-)")
         if self.theme_changed():
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.save[0], self.win.width // 64 * 63, self.win.height // 64 * 57)
@@ -817,36 +830,36 @@ class MazeVisualizer():
 
         blocks = {
             '42': {
-                'start': self.win.height // 64 + self.segment_height,
+                'start': self.win.height // 64,
                 'end': self.win.height // 64 + self.colors_block.height,
             },
             'Grid 1': {
-                'start': self.win.height // 64 * 9 + self.segment_height,
+                'start': self.win.height // 64 * 9,
                 'end': self.win.height // 64 * 9 + self.colors_block.height,
             },
             'Grid 2': {
-                'start': self.win.height // 64 * 17 + self.segment_height,
+                'start': self.win.height // 64 * 17,
                 'end': self.win.height // 64 * 17 + self.colors_block.height,
             },
             'Block found': {
-                'start': self.win.height // 64 * 25 + self.segment_height,
+                'start': self.win.height // 64 * 25,
                 'end': self.win.height // 64 * 25 + self.colors_block.height,
             },
             'Block not found': {
-                'start': self.win.height // 64 * 33 + self.segment_height,
+                'start': self.win.height // 64 * 33,
                 'end': self.win.height // 64 * 33 + self.colors_block.height,
             },
             'Snake': {
-                'start': self.win.height // 64 * 41 + self.segment_height,
+                'start': self.win.height // 64 * 41,
                 'end': self.win.height // 64 * 41 + self.colors_block.height,
             },
             'Background': {
-                'start': self.win.height // 64 * 49 + self.segment_height,
+                'start': self.win.height // 64 * 49,
                 'end': self.win.height // 64 * 49 + self.colors_block.height
             }
         }
         x_start = self.win.width // 64 * 60 + self.segment_height
-        x_end = x_start + self.segment_width * 8 + self.segment_height * 10
+        x_end = x_start + self.segment_width * 8 + self.segment_height * 16
         block_width = (x_end - x_start)/8
         if self.theme_changed():
             if self.win.width // 64 * 63 < x < self.win.width // 64 * 63 + self.save[1] and self.win.height // 64 * 57 < y < self.win.height // 64 * 57 + \
@@ -869,6 +882,7 @@ class MazeVisualizer():
                         row = int(y_rel // block_width)
                         col = int(x_rel // block_width)
                         self.colors[name] = self.transparent(self.palette[row*8+col], self.transparency)
+                        print(name, row, col)
                         if name == 'Background':
                             #self.restart()
 
