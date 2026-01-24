@@ -13,6 +13,7 @@ class MazeGenerator:
         self.width = width
         self.height = height
         self.found: Set[int] = set()
+        self.seed = seed
 
         self.set_42()
         self.set_neighbors()
@@ -82,7 +83,7 @@ class MazeGenerator:
 
             num_cells = max(1, len(self.available_cells))
             visualisation_tempo: int = max(
-                3, int((num_cells * math.log10(num_cells)) / 1000))
+                3, int((num_cells * math.log10(num_cells)) / 2000))
 
             self.maze[start] = 16
             current_pos = start

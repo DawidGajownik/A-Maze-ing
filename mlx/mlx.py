@@ -96,6 +96,7 @@ class Mlx:
     return self.mlx_func.mlx_loop_exit(mlx_ptr)
 
   def mlx_mouse_hook(self, win_ptr, callback, param):
+    self.mouse = True
     self.mlx_func.mlx_mouse_hook.restype = c_int
     if not callback:
       self._python_ref_std[str(win_ptr)+"_mouse_f"] = None
