@@ -709,7 +709,7 @@ class MazeVisualizer():
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.play[0] if self.paused else self.pause[0], self.win.width // 64 * 63,
                                        self.win.height // 64 * 59)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.frozen[0] if self.freezed else self.freeze[0], self.win.width // 64 * 63, self.win.height // 64 * 61)
-        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width * 251 // 256, self.win.height * 116 // 128, 0xFFFFFFFF, f"{self.slider_x}")
+        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width * 251 // 256, self.win.height * 231 // 256, 0xFFFFFFFF, f"{self.slider_x}")
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.slider.ptr, self.win.width // 128 * 119, self.win.height // 64 * 59 + self.play[1]//2)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.corrector.ptr, self.slider_x * self.slider.width // 100 + self.win.width // 128 * 119, self.win.height // 64 * 59 + self.play[1]//2 - self.corrector.height//2 + self.slider.height//2)
 
@@ -908,7 +908,7 @@ class MazeVisualizer():
             self.put_strings()
 
         if keycode == 115:
-            if self.transparency > 4:
+            if self.transparency > 5:
                 self.transparency -= 5
             elif self.transparency > 0:
                 self.transparency -= 1
