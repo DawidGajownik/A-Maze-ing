@@ -450,6 +450,59 @@ class MazeVisualizer():
 
     def fill_striped_block(self):
         data = self.colors_block_data
+        leng = len(data)
+        height = self.colors_block.height
+        width = self.colors_block.width
+        line_size = len(data) // height
+        tt = 2
+        t = height//10
+        l_size = line_size//4
+        wid = (l_size - 16*tt)//8
+        sequence = bytes()
+        for i in range (8):
+            sequence = sequence + ((
+                        bytes([0,0,0,0]) * (l_size * tt) +  #odstep y
+                        (
+                            #biała linia y
+                                (bytes([0, 0, 0, 0]) * tt +  # odstęp x
+                                 bytes([255, 255, 255, 255]) * wid +  # bialy pasek
+                                 bytes([0, 0, 0, 0]) * tt) * 8 +  # odstep x
+                                (bytes([0, 0, 0, 0]) * (l_size - 8 * (tt * 2 + wid))) #dopelłnij
+                        )
+                        +
+                        (
+                            #wypełnienie
+                            (
+                                    b''.join(
+                                        bytes([0, 0, 0, 0]) * tt +
+                                        bytes([255, 255, 255, 255]) * 1 +
+                                        self.palette[i * 8 + j] * (wid - 2) +
+                                        bytes([255, 255, 255, 255]) * 1 +
+                                        bytes([0, 0, 0, 0]) * tt
+                                        for j in range(8)
+                                    )
+                                    +
+                                    bytes([0, 0, 0, 0]) * (l_size - 8 * (tt * 2 + wid))
+                            )
+                        )
+                        * t +  #ilosc multiplikacji segmentu
+                        (
+                            # biała linia y
+                                (
+                                bytes([0, 0, 0, 0]) * tt +  # odstęp x
+                                bytes([255, 255, 255, 255]) * wid +  # bialy pasek
+                                bytes([0, 0, 0, 0]) * tt) * 8 +  # odstep x
+                                bytes([0, 0, 0, 0]) * (l_size - 8 * (tt * 2 + wid)) #dopełnij
+                        ) +
+                        bytes([0, 0, 0, 0]) * (l_size * tt) #odstep y
+                ))
+        data[:] = ( sequence
+                + bytes([0, 0, 0, 0]) * l_size + b'\x00' * len(data)
+            )[:leng]
+        self.segment_height = self.colors_block.height // 32
+        self.segment_width = max(1, int((width - 8.5 * self.segment_height) // 8) - 2)
+    def fill_striped_blockw(self):
+        data = self.colors_block_data
         width = self.colors_block.width
 
         self.segment_height = max(2, self.colors_block.height // 32 - 2)

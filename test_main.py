@@ -22,7 +22,6 @@ def main() -> None:
         exit = str((config["EXIT"])).split(",")
         entry = int(entry[0]), int(entry[1])
         exit = int(exit[0]), int(exit[1])
-        print(entry, exit)
         output = config["OUTPUT_FILE"]
         perfect = config["PERFECT"].lower() == "true"
         manager = MazeManager(width, height, entry, exit)
