@@ -186,27 +186,30 @@ class Draw():
                     j * img.scale + y + img.thickness, 0xFFaaaaaa)
 
     def draw_path(
-            cls, m: Mlx, mlx: any, maze, img: Image, win: Window, list, colors:dict, lines: dict, play: bool
+            cls, m: Mlx, mlx: any, maze, img: Image, path_img:Image, win: Window, list, colors:dict, lines: dict, offset: int
     ):
         if isinstance(list, int):
             x = list % maze.width
             y = list // maze.width
-            cls._put_block(x, y, img, lines['Snake'], colors['Snake'][:3] + bytes([255]), img.thickness)
-            m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, (img.height - maze.height*img.scale)//2)
-            #m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
+            cls._put_block(x, y, img, lines['Snake'], colors['Snake'][:3] + bytes([3]), img.thickness)
+            m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, offset)
+            m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
+
+
         else:
             for path in list:
                 x = path % maze.width
                 y = path // maze.width
-                cls._put_block(x, y, img, lines['Snake'], colors['Snake'][:3] + bytes([255]), img.thickness)
-                m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, (img.height - maze.height*img.scale)//2)
+                cls._put_block(x, y, path_img, lines['Snake'], colors['Snake'][:3] + bytes([255]), img.thickness)
+                m.mlx_put_image_to_window(mlx, win.ptr, path_img.ptr, 0, offset)
                 m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
-            play = False
+
+
 
     def draw_maze(
             cls, a: int, s: int, m: Mlx, mlx: any, maze, img: Image, win: Window, found, colors: dict, darken,
             brick_visible: bool,
-            brick: Brick, lines: dict
+            brick: Brick, lines: dict, offset: int
             ) -> None:
         row_pixels = img.width
         fill_pixels = maze.width * img.scale + img.thickness*2
@@ -293,5 +296,5 @@ class Draw():
                     if maze.map[(y - 1)* maze.width + x] & (1 << Direction.WEST.value):
                         cls._put_left(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x, y - 1, img, wall_range, False)
                         cls._put_right(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x - 1, y - 1, img, maze, wall_range, False)
-        m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, (img.height - maze.height*img.scale)//2)
+        m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, offset)
         m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)

@@ -8,6 +8,7 @@ from algorithms.MazeGenerator import MazeGenerator
 from random import randint
 from time import sleep
 from datetime import datetime
+import math
 
 
 class MazeVisualizer:
@@ -357,7 +358,6 @@ class MazeVisualizer:
             },
 
         }
-
         self.mouse = False
         self.slider_x = 0
         self.paused = False
@@ -420,9 +420,10 @@ class MazeVisualizer:
 
     def draw_slow(self, vars):
         if not self.bool or self.freezed:
+            if self.path_finding:
+                self.path_show()
             return
         try:
-            self.time = datetime.now()
             diff = (datetime.now() - self.start_time).total_seconds()*2
             transparency = int((diff*diff))
             if 0 < transparency < 26:
@@ -445,20 +446,22 @@ class MazeVisualizer:
             offset_y = (self.img.height - self.maze.height*self.img.scale)//2
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.start[0], self.maze.start[0] * self.img.scale + offset, self.maze.start[1] * self.img.scale + offset + offset_y)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.finish[0], self.maze.end[0] * self.img.scale + offset, self.maze.end[1] * self.img.scale + offset + offset_y)
-            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken, self.brick_visible, self.brick, self.lines)
+            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken, self.brick_visible, self.brick, self.lines, self.offset)
+            self.time = datetime.now()
 
         except StopIteration:
-            self.brick.mortar_color = bytes([30,30,30,self.transparency])
-            self.brick.texture_create()
-            self.path_finding = True
+            if not self.path_finding:
+                self.brick.texture_create()
+                self.path_finding = True
             if (datetime.now() - self.time).total_seconds() < 3:
                 self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found,
-                                    self.colors, self.darken, self.brick_visible, self.brick, self.lines)
+                                    self.colors, self.darken, self.brick_visible, self.brick, self.lines, self.offset)
                 if self.path_finding:
-                    self.transparency = 5
+                    #self.transparency = 5
                     for color in self.colors:
                         if color != 'name':
                             self.colors[color] = self.transparent(self.colors[color], self.transparency)
+                    self.bool = False
                     self.path_show()
                 
                 
@@ -467,8 +470,11 @@ class MazeVisualizer:
     def path_show(self):
         try:
             self.path = next(self.finder)
-            self.draw.draw_path(self.m, self.mlx, self.maze, self.img, self.win, self.path, self.colors, self.lines, self.path_finding)
+            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.img.ptr, 0, self.offset)
+
+            self.draw.draw_path(self.m, self.mlx, self.maze, self.path_img, self.final_path_img, self.win, self.path, self.colors, self.lines, self.offset)
         except StopIteration as e:
+            self.path_finding = False
             self.bool = False
 
     def _new_image_dict(self, mlx, width, height, i):
@@ -751,6 +757,41 @@ class MazeVisualizer:
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.slider.ptr, self.win.width // 128 * 119, self.win.height // 64 * 59 + self.play[1]//2)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.corrector.ptr, self.slider_x * self.slider.width // 100 + self.win.width // 128 * 119, self.win.height // 64 * 59 + self.play[1]//2 - self.corrector.height//2 + self.slider.height//2)
 
+    import math
+
+    def is_hex_filled(x: int, y: int, hex_r: int) -> bool:
+        """
+        Zwraca True jeśli punkt (x, y) leży wewnątrz heksagonu
+        w powtarzalnej siatce hex
+        """
+
+        h = math.sqrt(3) * hex_r
+        x_step = 3 * hex_r / 2
+        y_step = h
+
+        # indeks kolumny
+        col = int(x // x_step)
+
+        # przesunięcie co drugą kolumnę
+        y_offset = y_step / 2 if col % 2 else 0
+
+        # indeks wiersza
+        row = int((y - y_offset) // y_step)
+
+        # środek aktualnego heksagonu
+        cx = col * x_step
+        cy = row * y_step + y_offset
+
+        # lokalne współrzędne
+        dx = abs(x - cx)
+        dy = abs(y - cy)
+
+        # szybkie odrzucenie
+        if dx > hex_r or dy > h / 2:
+            return False
+
+        # właściwy test heksagonu
+        return (math.sqrt(3) * dx + dy) <= h
 
     def theme_changed(self):
         for a, b in zip(self.themes[self.theme_idx].values(), self.colors.values()):
@@ -763,7 +804,11 @@ class MazeVisualizer:
         self.mlx = self.m.mlx_init()
         self.win = Window(self.m, self.mlx, "A-Maze-ing")
         self.img = Image(self.m, self.mlx, self.win, self.maze)
+        self.path_img = Image(self.m, self.mlx, self.win, self.maze)
+        self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
         scale = self.img.scale
+        self.offset = (self.img.height - self.maze.height*self.img.scale)//2
+
         self.lines = {
             'Snake': self.colors['Snake'] * self.img.scale,
             'Block not found': self.colors['Block not found'] * (self.img.scale - 1),
@@ -772,7 +817,7 @@ class MazeVisualizer:
             'line_x': self.colors['Grid 1'] * (self.img.scale + 2 * self.img.thickness),
             'line_y': self.colors['Grid 1'] * self.img.thickness
         }
-        self.brick = Brick(self.img.scale, self.transparency, self.colors['Block found'], bytes([30,30,30,255]))
+        self.brick = Brick(self.img.scale, self.transparency, self.colors['Block found'], bytes([30,30,30,30]))
         size = (
             10 if scale < 15 else
             15 if scale < 20 else
@@ -934,7 +979,6 @@ class MazeVisualizer:
                         row = int(y_rel // block_width)
                         col = int(x_rel // block_width)
                         self.colors[name] = self.transparent(self.palette[row*8+col], self.transparency)
-                        print(name, row, col)
                         if name == 'Background':
                             #self.restart()
 
@@ -952,7 +996,6 @@ class MazeVisualizer:
         mlx = vars['mlx']
         draw: callable = vars['draw']
         m: Mlx = vars['m']
-        print(keycode)
         if keycode == 98:
             self.brick_visible = not self.brick_visible
         if keycode == 108:
@@ -1076,7 +1119,6 @@ class MazeVisualizer:
             self.img = Image(self.m, self.mlx, self.win, self.maze)
             self.img.thickness = thickness
             self.bool = True
-        print(img.scale)
         self.brick.size = self.img.scale
         self.brick.texture_create()
         self.time = datetime.now()

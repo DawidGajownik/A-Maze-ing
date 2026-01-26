@@ -11,7 +11,6 @@ class Brick:
         self.texture_create()
 
     def texture_create(self):
-        print(self.size)
         self.brick_w = self.size // self.bricks_in_row - self.mortar_thickness_x
         self.brick_h = self.size // self.rows_in_block
         while self.size - ((self.brick_w + self.mortar_thickness_x) * self.bricks_in_row) > self.brick_w + self.mortar_thickness_x:
