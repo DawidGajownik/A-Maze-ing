@@ -1,9 +1,9 @@
 class Brick:
     def __init__(self, size:int, transparency: int, color: bytes = None, mortar_color: bytes = None):
-        self.mortar_thickness_y = 3
-        self.mortar_thickness_x = 5
-        self.bricks_in_row = 3
-        self.rows_in_block = 7
+        self.mortar_thickness_y = 1
+        self.mortar_thickness_x = 2
+        self.bricks_in_row = 2
+        self.rows_in_block = 5
         self.size = size
         self.transparency = transparency
         self.color = bytes([28, 53, 116, max(255, self.transparency * 2)]) if color is None else color

@@ -1049,6 +1049,7 @@ class MazeVisualizer:
             self.img = Image(self.m, self.mlx, self.win, self.maze)
             self.img.thickness = thickness
             self.bool = True
+        self.brick.size = img.scale
         self.brick.texture_create()
         self.time = datetime.now()
         self.make_lines()

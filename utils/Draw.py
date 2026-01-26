@@ -30,23 +30,27 @@ class Draw():
         size = img.scale
 
 
-        for y in range(start_y, start_y + size):
-            offset = (y * img.width + start_x) * 4
-            img.data[offset: offset + size * 4] = brick.mortar if y % brick.brick_h < brick.mortar_thickness_y else brick.row_1 if (y // brick.brick_h)%2 == 0 else brick.row_3
+        try:
+            for y in range(start_y, start_y + size - 1):
+                offset = (y * img.width + start_x) * 4
+                print(offset, offset + size * 4, size * 4, len(brick.row_1),  len(brick.row_3),  len(brick.mortar))
+                img.data[offset: offset + size * 4] = brick.mortar if y % brick.brick_h < brick.mortar_thickness_y else brick.row_1 if (y // brick.brick_h)%2 == 0 else brick.row_3
+        except ValueError as e:
+            print(e, offset, offset + size * 4, size * 4, len(brick.row_1),  len(brick.row_3),  len(brick.mortar))
 
-    def _put_block(cls, i: int, j: int, img, line: bytes, thickness: int) -> None:
+    def _put_block(cls, i: int, j: int, img, line: bytes, color:bytes, thickness: int) -> None:
 
         start_x = i * img.scale + thickness
         start_y = j * img.scale + thickness
         size = img.scale - thickness
 
-        #row = color * size
+        row = color * size
 
         for y in range(start_y, start_y + size):
             offset = (y * img.width + start_x) * 4
             img.data[offset: offset + size * 4] = line
 
-    def _put_up(cls, m: Mlx, mlx: any, win: Window, line: bytes, i: int, j: int, img: Image, wall_range: tuple, out: bool) -> None:
+    def _put_up(cls, m: Mlx, mlx: any, win: Window, line: bytes, color: bytes, i: int, j: int, img: Image, wall_range: tuple, out: bool) -> None:
 
         start_y = j * img.scale + img.thickness
         start_x = i * img.scale + img.thickness - 1
@@ -64,7 +68,7 @@ class Draw():
             return
 
         pixels = x1 - x0
-        #line_bytes = color * pixels
+        line = color * pixels
         line_len = pixels * 4
 
         for y in range(y_start, y_end):
@@ -72,7 +76,7 @@ class Draw():
                 offset = (y * img.width + x0) * 4
                 img.data[offset:offset + line_len] = line
 
-    def _put_down(cls, m: Mlx, mlx: any, win: Window, line: int,
+    def _put_down(cls, m: Mlx, mlx: any, win: Window, line: int, color: bytes,
             i: int, j: int, img: Image, maze: Maze, w_range: tuple, out: bool
             ) -> None:
 
@@ -96,7 +100,7 @@ class Draw():
             return
 
         pixels = x1 - x0
-        #line_bytes = color * pixels
+        line = color * pixels
         line_len = pixels * 4
 
         for y in range(y_start, y_end):
@@ -104,7 +108,7 @@ class Draw():
                 offset = (y * img.width + x0) * 4
                 img.data[offset:offset + line_len] = line
 
-    def _put_left(cls, m: Mlx, mlx: any, win: Window, line: bytes, i: int, j: int, img: Image, w_range: tuple, out: bool) -> None:
+    def _put_left(cls, m: Mlx, mlx: any, win: Window, line: bytes, color: bytes, i: int, j: int, img: Image, w_range: tuple, out: bool) -> None:
         start_y = j * img.scale + img.thickness - 1
         x_base = i * img.scale + img.thickness
 
@@ -116,7 +120,7 @@ class Draw():
         y1 = start_y + w_range[1]
 
         pixels = img.thickness
-        #line = color * pixels
+        line = color * pixels
 
         # clip Y
         y0 = max(0, y0)
@@ -129,7 +133,7 @@ class Draw():
             offset = (y * width + x_base) * 4
             data[offset:offset + pixels*4] = line
 
-    def _put_right(cls, m: Mlx, mlx: any, win: Window, line: bytes,
+    def _put_right(cls, m: Mlx, mlx: any, win: Window, line: bytes, color: bytes,
             i: int, j: int, img: Image, maze: Maze, w_range: tuple, out: bool
             ) -> None:
         start_y = j * img.scale + img.thickness - 1
@@ -144,7 +148,7 @@ class Draw():
         y1 = start_y + w_range[1]
 
         pixels = img.thickness
-        #line = color * pixels
+        line = color * pixels
         # clip Y
         y0 = max(0, y0)
         y1 = min(height, y1)
@@ -209,10 +213,10 @@ class Draw():
             brick: Brick, lines: dict
             ) -> None:
         row_pixels = img.width
-        fill_pixels = maze.width * img.scale + img.thickness*2 + 4
+        fill_pixels = maze.width * img.scale + img.thickness*2
         rest_pixels = row_pixels - fill_pixels
 
-        for row in range(maze.height * img.scale + img.thickness*2 + 4):
+        for row in range(maze.height * img.scale + img.thickness*2):
             row_start = row * img.width * 4
             row_end = row_start + img.width * 4
 
@@ -240,58 +244,58 @@ class Draw():
                         if brick_visible:
                             cls._put_brick(x, y, img, 0, int(colors['42'][3]), brick)
                         else:
-                            cls._put_block(x, y, img, lines['Block found'], img.thickness)
+                            cls._put_block(x, y, img, lines['Block found'], colors['Block found'], img.thickness)
                     if maze.map[y * maze.width + x] == 15:
-                        cls._put_block(x, y, img, lines['42'], img.thickness)
-                        cls._put_down(m, mlx, win.ptr, lines['line_x'], x, y-1, img, maze, wall_range, False)
-                        cls._put_up(m, mlx, win.ptr, lines['line_x'], x, y+1, img, wall_range, False)
-                        cls._put_left(m, mlx, win.ptr, lines['line_y'], x+1, y, img, wall_range, False)
-                        cls._put_right(m, mlx, win.ptr, lines['line_y'], x-1, y, img, maze, wall_range, False)
+                        cls._put_block(x, y, img, lines['42'], colors['42'], img.thickness)
+                        cls._put_down(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y-1, img, maze, wall_range, False)
+                        cls._put_up(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y+1, img, wall_range, False)
+                        cls._put_left(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x+1, y, img, wall_range, False)
+                        cls._put_right(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x-1, y, img, maze, wall_range, False)
                     if maze.map[y * maze.width + x] == 16:
-                        cls._put_block(x, y, img, lines['Snake'], 0)
+                        cls._put_block(x, y, img, lines['Snake'], colors['Snake'], 0)
                         if maze.map[y * maze.width + x - 1] != 16:
-                            cls._put_left(m, mlx, win.ptr, lines['line_y'], x, y, img, wall_range, False)
-                            cls._put_right(m, mlx, win.ptr, lines['line_y'], x-1, y, img, maze, wall_range, False)
+                            cls._put_left(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x, y, img, wall_range, False)
+                            cls._put_right(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x-1, y, img, maze, wall_range, False)
                         if x == maze.width - 1 or maze.map[y * maze.width + x + 1] != 16:
-                            cls._put_right(m, mlx, win.ptr, lines['line_y'], x, y, img, maze, wall_range, False)
-                            cls._put_left(m, mlx, win.ptr, lines['line_y'], x+1, y, img, wall_range, False)
+                            cls._put_right(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x, y, img, maze, wall_range, False)
+                            cls._put_left(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x+1, y, img, wall_range, False)
                         if maze.map[(y-1) * maze.width + x] != 16:
-                            cls._put_up(m, mlx, win.ptr, lines['line_x'], x, y, img, wall_range, False)
-                            cls._put_down(m, mlx, win.ptr, lines['line_x'], x, y-1, img, maze, wall_range, False)
+                            cls._put_up(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y, img, wall_range, False)
+                            cls._put_down(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y-1, img, maze, wall_range, False)
                         if y == maze.height - 1 or maze.map[(y+1) * maze.width + x] != 16:
-                            cls._put_down(m, mlx, win.ptr, lines['line_x'], x, y, img, maze, wall_range, False)
-                            cls._put_up(m, mlx, win.ptr, lines['line_x'], x, y+1, img, wall_range, False)
+                            cls._put_down(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y, img, maze, wall_range, False)
+                            cls._put_up(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y+1, img, wall_range, False)
                         if maze.map[y * maze.width + x - 1] == 16:
                             if maze.map[(y-1) * maze.width + x - 1] != 16:
-                                cls._put_up(m, mlx, win.ptr, lines['line_x'], x - 1, y, img, wall_range, False)
-                                cls._put_down(m, mlx, win.ptr, lines['line_x'], x - 1, y - 1, img, maze, wall_range, False)
+                                cls._put_up(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x - 1, y, img, wall_range, False)
+                                cls._put_down(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x - 1, y - 1, img, maze, wall_range, False)
                         if maze.map[(y - 1) * maze.width + x] == 16:
                              if maze.map[(y-1) * maze.width + x - 1] != 16:
-                                 cls._put_left(m, mlx, win.ptr, lines['line_y'], x, y - 1, img, wall_range, False)
-                                 cls._put_right(m, mlx, win.ptr, lines['line_y'], x - 1, y - 1, img, maze, wall_range,False)
+                                 cls._put_left(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x, y - 1, img, wall_range, False)
+                                 cls._put_right(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x - 1, y - 1, img, maze, wall_range,False)
                     #if y * maze.width + x == maze.entry:
                         #cls._put_block(x, y, img, bytes([0, 255, 0, 10]), img.thickness)
                     #if y * maze.width + x == maze.exit:
                         #cls._put_block(x, y, img, bytes([255, 0, 0, 10]), img.thickness)
                     if maze.map[y * maze.width + x] & (1 << Direction.SOUTH.value):
-                        cls._put_down(m, mlx, win.ptr, lines['line_x'], x, y, img, maze, wall_range, False)
-                        cls._put_up(m, mlx, win.ptr, lines['line_x'], x, y + 1, img, wall_range, False)
+                        cls._put_down(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y, img, maze, wall_range, False)
+                        cls._put_up(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y + 1, img, wall_range, False)
                         if y == maze.height:
-                            cls._put_down(m, mlx, win.ptr, lines['line_x'], x, y - 1, img, maze, wall_range, False)
+                            cls._put_down(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y - 1, img, maze, wall_range, False)
                     if maze.map[y * maze.width + x] & (1 << Direction.NORTH.value):
-                        cls._put_up(m, mlx, win.ptr, lines['line_x'], x, y, img, wall_range, False)
-                        cls._put_down(m, mlx, win.ptr, lines['line_x'], x, y-1, img, maze, wall_range, False)
+                        cls._put_up(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y, img, wall_range, False)
+                        cls._put_down(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x, y-1, img, maze, wall_range, False)
                     if maze.map[y * maze.width + x] & (1 << Direction.WEST.value):
-                        cls._put_left(m, mlx, win.ptr, lines['line_y'], x, y, img, wall_range, False)
-                        cls._put_right(m, mlx, win.ptr, lines['line_y'], x-1, y, img, maze, wall_range, False)
+                        cls._put_left(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x, y, img, wall_range, False)
+                        cls._put_right(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x-1, y, img, maze, wall_range, False)
                     if maze.map[y * maze.width + x] & (1 << Direction.EAST.value):
-                        cls._put_right(m, mlx, win.ptr, lines['line_y'], x, y, img, maze, wall_range, False)
-                        cls._put_left(m, mlx, win.ptr, lines['line_y'], x+1, y, img, wall_range, False)
+                        cls._put_right(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x, y, img, maze, wall_range, False)
+                        cls._put_left(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x+1, y, img, wall_range, False)
                     if maze.map[y * maze.width + x - 1] & (1 << Direction.NORTH.value):
-                        cls._put_up(m, mlx, win.ptr, lines['line_x'], x - 1, y, img, wall_range, False)
-                        cls._put_down(m, mlx, win.ptr, lines['line_x'], x - 1, y-1, img, maze, wall_range, False)
+                        cls._put_up(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x - 1, y, img, wall_range, False)
+                        cls._put_down(m, mlx, win.ptr, lines['line_x'], colors['Grid 1'], x - 1, y-1, img, maze, wall_range, False)
                     if maze.map[(y - 1)* maze.width + x] & (1 << Direction.WEST.value):
-                        cls._put_left(m, mlx, win.ptr, lines['line_y'], x, y - 1, img, wall_range, False)
-                        cls._put_right(m, mlx, win.ptr, lines['line_y'], x - 1, y - 1, img, maze, wall_range, False)
+                        cls._put_left(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x, y - 1, img, wall_range, False)
+                        cls._put_right(m, mlx, win.ptr, lines['line_y'], colors['Grid 1'], x - 1, y - 1, img, maze, wall_range, False)
         m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, (img.height - maze.height*img.scale)//2)
         m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
