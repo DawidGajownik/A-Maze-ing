@@ -84,7 +84,7 @@ class MazeGenerator:
             num_cells = max(1, len(self.available_cells))
             visualisation_tempo: int = max(
                 3, int((num_cells * math.log10(num_cells)) / 2000))
-            visualisation_tempo = 100
+            #visualisation_tempo = 100
             self.maze[start] = 16
             current_pos = start
 
