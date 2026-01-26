@@ -10,7 +10,7 @@ from time import sleep
 from datetime import datetime
 
 
-class MazeVisualizer():
+class MazeVisualizer:
 
     def __init__(
             self, maze, 
@@ -24,6 +24,11 @@ class MazeVisualizer():
         self.start_time = datetime.now()
         self.transparency = 1
         self.menu_showed = False
+        self.mortar_thickness_y = 3
+        self.mortar_thickness_x = 5
+        self.bricks_in_row = 3
+        self.rows_in_block = 7
+        self.brick = False
         self.themes = {
             1: {
                 'name': 'dgajowni',
@@ -406,6 +411,7 @@ class MazeVisualizer():
         if not self.bool or self.freezed:
             return
         try:
+            self.time = datetime.now()
             diff = (datetime.now() - self.start_time).total_seconds()*2
             transparency = int((diff*diff))
             if 0 < transparency < 26:
@@ -428,10 +434,14 @@ class MazeVisualizer():
             offset_y = (self.img.height - self.maze.height*self.img.scale)//2
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.start[0], self.maze.start[0] * self.img.scale + offset, self.maze.start[1] * self.img.scale + offset + offset_y)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.finish[0], self.maze.end[0] * self.img.scale + offset, self.maze.end[1] * self.img.scale + offset + offset_y)
-            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken)
-        except StopIteration as e:
+            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken, self.brick, self.mortar_thickness_x, self.mortar_thickness_y, self.bricks_in_row, self.rows_in_block)
 
-            self.bool = False
+        except StopIteration:
+            if (datetime.now() - self.time).total_seconds() < 3:
+                self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found,
+                                    self.colors, self.darken, self.brick, self.mortar_thickness_x, self.mortar_thickness_y, self.bricks_in_row, self.rows_in_block)
+            else:
+                self.bool = False
 
     def _new_image_dict(self, mlx, width, height, i):
         img = mlx.mlx_new_image(self.mlx, width, height)
@@ -456,7 +466,7 @@ class MazeVisualizer():
         l_size = line_size//4
         wid = (l_size - 16*tt)//8
         sequence = bytes()
-        #background = bytes([255,0,0,255])
+        background = bytes([255,0,0,255])
         background = bytes([0,0,0,0])
         for i in range (8):
             sequence = sequence + ((
@@ -496,7 +506,7 @@ class MazeVisualizer():
                         background * (l_size * tt) #odstep y
                 ))
         data[:] = ( sequence
-                + background * l_size + b'\x255' * len(data)
+                + background * l_size + b'\x120' * len(data)
             )[:leng]
         self.segment_height = self.colors_block.height // 32
         self.segment_width = max(1, int((width - 8.5 * self.segment_height) // 8) - 2)
@@ -887,6 +897,8 @@ class MazeVisualizer():
                             #self.restart()
 
                             self.show_menu()
+        self.time = datetime.now()
+        self.bool = True
         self.put_strings()
 
 
@@ -897,6 +909,28 @@ class MazeVisualizer():
         mlx = vars['mlx']
         draw: callable = vars['draw']
         m: Mlx = vars['m']
+        if keycode == 98:
+            self.brick = not self.brick
+        if keycode == 108:
+            if self.bricks_in_row > 1:
+                self.bricks_in_row -=1
+        if keycode == 106:
+            self.bricks_in_row +=1
+        if keycode == 105:
+            if self.rows_in_block > 1:
+                self.rows_in_block -=1
+        if keycode == 107:
+            self.rows_in_block +=1
+        if keycode == 65431:
+            self.mortar_thickness_x+=1
+        if keycode == 65433:
+            if self.mortar_thickness_x > 0:
+                self.mortar_thickness_x -= 1
+        if keycode == 65432:
+            self.mortar_thickness_y+=1
+        if keycode == 65430:
+            if self.mortar_thickness_y > 0:
+                self.mortar_thickness_y -= 1
         if keycode == 119:
             if self.transparency < 5:
                 self.transparency += 1
@@ -997,6 +1031,8 @@ class MazeVisualizer():
             self.img = Image(self.m, self.mlx, self.win, self.maze)
             self.img.thickness = thickness
             self.bool = True
+        self.time = datetime.now()
+        self.bool = True
         if keycode == 65307:
             m.mlx_destroy_window(mlx, win.ptr)
             m.mlx_loop_exit(mlx)
