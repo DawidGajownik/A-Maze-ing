@@ -15,7 +15,8 @@ class MazeVisualizer:
     def __init__(
             self, maze, 
             enter: tuple[int, int], exit: tuple[int, int]):
-        self.path = maze.path
+        self.path = list()
+        self.list = list()
         self.enter = enter
         self.exit = exit
         self.maze = maze
@@ -25,7 +26,7 @@ class MazeVisualizer:
         self.transparency = 1
         self.menu_showed = False
         self.brick_visible = False
-        self.path_finder = maze.finder
+        self.finder = maze.finder.find_path(maze)
         self.themes = {
             1: {
                 'name': 'dgajowni',
@@ -364,6 +365,7 @@ class MazeVisualizer:
         self.theme_idx = 1
         self.colors = copy(self.themes[self.theme_idx])
         self.player = False
+        self.path_finding = False
         self.palette = [
             # rząd 1
             bytes([255, 255, 255, 255]), bytes([192, 192, 192, 255]), bytes([255, 192, 192, 255]),
@@ -446,12 +448,26 @@ class MazeVisualizer:
             self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken, self.brick_visible, self.brick, self.lines)
 
         except StopIteration:
+            self.path_finding = True
             if (datetime.now() - self.time).total_seconds() < 3:
                 self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found,
                                     self.colors, self.darken, self.brick_visible, self.brick, self.lines)
-            else:
-                self.bool = False
+                if self.path_finding:
+                    self.transparency = 5
+                    for color in self.colors:
+                        if color != 'name':
+                            self.colors[color] = self.transparent(self.colors[color], self.transparency)
+                    self.path_show()
+                
+                
+        
 
+    def path_show(self):
+        try:
+            self.path = next(self.finder)
+            self.draw.draw_path(self.m, self.mlx, self.maze, self.img, self.win, self.path, self.colors, self.lines, self.path_finding)
+        except StopIteration as e:
+            self.bool = False
 
     def _new_image_dict(self, mlx, width, height, i):
         img = mlx.mlx_new_image(self.mlx, width, height)
@@ -638,7 +654,6 @@ class MazeVisualizer:
 
     def restart(self):
         #self.start_time = datetime.now()
-        self.transparency = 0
         self.background_img_data[:] = self.darken(self.colors['Background'], 0.6) * (
                     len(self.background_img_data) // 4)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
@@ -813,6 +828,7 @@ class MazeVisualizer:
         #self.m.mlx_hook(self.win.ptr, 4, 1 << 2, self.mouse_press, self.vars)
         #self.m.mlx_hook(self.win.ptr, 5, 1 << 3, self.mouse_release, self.vars)
         self.m.mlx_loop_hook(self.mlx, self.draw_slow, self.vars)
+        
         self.gen = generator
         self.generator = self.gen.create_maze(self.maze, seed, self.player)
         self.m.mlx_loop(self.mlx)

@@ -14,7 +14,7 @@ class MazeGenerator:
         self.height = height
         self.found: Set[int] = set()
         self.seed = seed
-        self.is_perfect = False
+        self.is_perfect = True
 
         self.set_42()
         self.set_neighbors()

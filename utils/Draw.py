@@ -186,9 +186,22 @@ class Draw():
                     j * img.scale + y + img.thickness, 0xFFaaaaaa)
 
     def draw_path(
-            cls, 
+            cls, m: Mlx, mlx: any, maze, img: Image, win: Window, list, colors:dict, lines: dict, play: bool
     ):
-        pass
+        if isinstance(list, int):
+            x = list % maze.width
+            y = list // maze.width
+            cls._put_block(x, y, img, lines['Snake'], colors['Snake'][:3] + bytes([255]), img.thickness)
+            m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, (img.height - maze.height*img.scale)//2)
+            #m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
+        else:
+            for path in list:
+                x = path % maze.width
+                y = path // maze.width
+                cls._put_block(x, y, img, lines['Snake'], colors['Snake'][:3] + bytes([255]), img.thickness)
+                m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, (img.height - maze.height*img.scale)//2)
+                m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
+            play = False
 
     def draw_maze(
             cls, a: int, s: int, m: Mlx, mlx: any, maze, img: Image, win: Window, found, colors: dict, darken,
