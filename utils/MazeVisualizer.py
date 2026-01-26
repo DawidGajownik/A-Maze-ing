@@ -25,6 +25,7 @@ class MazeVisualizer:
         self.transparency = 1
         self.menu_showed = False
         self.brick_visible = False
+        self.path_finder = maze.finder
         self.themes = {
             1: {
                 'name': 'dgajowni',
@@ -362,7 +363,7 @@ class MazeVisualizer:
         self.freezed = False
         self.theme_idx = 1
         self.colors = copy(self.themes[self.theme_idx])
-
+        self.player = False
         self.palette = [
             # rząd 1
             bytes([255, 255, 255, 255]), bytes([192, 192, 192, 255]), bytes([255, 192, 192, 255]),
@@ -450,6 +451,7 @@ class MazeVisualizer:
                                     self.colors, self.darken, self.brick_visible, self.brick, self.lines)
             else:
                 self.bool = False
+
 
     def _new_image_dict(self, mlx, width, height, i):
         img = mlx.mlx_new_image(self.mlx, width, height)
@@ -635,7 +637,7 @@ class MazeVisualizer:
         return bytes([r, g, b, level])
 
     def restart(self):
-        self.start_time = datetime.now()
+        #self.start_time = datetime.now()
         self.transparency = 0
         self.background_img_data[:] = self.darken(self.colors['Background'], 0.6) * (
                     len(self.background_img_data) // 4)
@@ -724,6 +726,7 @@ class MazeVisualizer:
                               "Th = " + str(self.img.thickness) + "(+/-)")
         if self.theme_changed():
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.save[0], self.win.width // 64 * 63, self.win.height // 64 * 57)
+        self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.refresh[0], self.win.width // 64 * 61, self.win.height // 64 * 57)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.play[0] if self.paused else self.pause[0], self.win.width // 64 * 63,
                                        self.win.height // 64 * 59)
         self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.frozen[0] if self.freezed else self.freeze[0], self.win.width // 64 * 63, self.win.height // 64 * 61)
@@ -770,10 +773,11 @@ class MazeVisualizer:
         self.frozen = self.m.mlx_png_file_to_image(self.mlx, "pictures/freezed.png")
         self.start = self.m.mlx_png_file_to_image(self.mlx, f"pictures/start{size}.png")
         self.finish = self.m.mlx_png_file_to_image(self.mlx, f"pictures/finish{size}.png")
-        self.slider = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 20, self.win.width // 400)
+        self.refresh = self.m.mlx_png_file_to_image(self.mlx, "pictures/refresh.png")
         self.corrector = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 400, self.win.width // 100)
         self.corrector_data = self.m.mlx_get_data_addr(self.corrector.ptr)[0]
         self.corrector_data[:] = bytes([120, 120, 120, 255]) * (len(self.corrector_data) // 4)
+        self.slider = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 20, self.win.width // 400)
         self.slider_data = self.m.mlx_get_data_addr(self.slider.ptr)[0]
         self.slider_data[:] = bytes([255, 255, 255, 255]) * (len(self.slider_data) // 4)
         self.background_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 8 * 7, self.win.height)
@@ -810,7 +814,7 @@ class MazeVisualizer:
         #self.m.mlx_hook(self.win.ptr, 5, 1 << 3, self.mouse_release, self.vars)
         self.m.mlx_loop_hook(self.mlx, self.draw_slow, self.vars)
         self.gen = generator
-        self.generator = self.gen.create_maze(self.maze, seed)
+        self.generator = self.gen.create_maze(self.maze, seed, self.player)
         self.m.mlx_loop(self.mlx)
 
     def mouse_press(self, button, x, y, vars):
@@ -891,6 +895,10 @@ class MazeVisualizer:
             if self.win.width // 64 * 63 < x < self.win.width // 64 * 63 + self.save[1] and self.win.height // 64 * 57 < y < self.win.height // 64 * 57 + \
                     self.save[2]:
                 self.themes[self.theme_idx] = copy(self.colors)
+        if self.win.width // 64 * 61 < x < self.win.width // 64 * 61 + self.refresh[1] and self.win.height // 64 * 57 < y < self.win.height // 64 * 57 + \
+                self.refresh[2]:
+            self.player = not self.player
+            self.generator = self.gen.create_maze(self.maze, self.seed, self.player)
         if self.win.width // 64 * 63 < x < self.win.width // 64 * 63 + self.play[1] and self.win.height // 64 * 59 < y < self.win.height // 64 * 59 + \
                 self.play[2]:
             self.paused = not self.paused
@@ -926,6 +934,7 @@ class MazeVisualizer:
         mlx = vars['mlx']
         draw: callable = vars['draw']
         m: Mlx = vars['m']
+        print(keycode)
         if keycode == 98:
             self.brick_visible = not self.brick_visible
         if keycode == 108:
@@ -989,8 +998,8 @@ class MazeVisualizer:
                 self.put_strings()
         if keycode == 110:
             self.seed = randint(0,9999)
-            self.generator = self.gen.create_maze(self.maze, self.seed)
-            self.start_time = datetime.now()
+            self.generator = self.gen.create_maze(self.maze, self.seed, self.player)
+            #self.start_time = datetime.now()
             self.put_strings()
             self.bool = True
         if keycode == 65451:
@@ -1005,7 +1014,7 @@ class MazeVisualizer:
         if keycode == 65361 and self.maze.width > 4:
             self.maze.width -= 1
             self.seed = randint(0,9999)
-            self.generator = self.gen.create_maze(self.maze, self.seed)
+            self.generator = self.gen.create_maze(self.maze, self.seed, self.player)
             self.restart()
             self.show_menu()
             self.put_strings()
@@ -1016,7 +1025,7 @@ class MazeVisualizer:
         if keycode == 65362 and self.maze.height > 4:
             self.maze.height -= 1
             self.seed = randint(0,9999)
-            self.generator = self.gen.create_maze(self.maze, self.seed)
+            self.generator = self.gen.create_maze(self.maze, self.seed, self.player)
             self.restart()
             self.show_menu()
 
@@ -1028,7 +1037,7 @@ class MazeVisualizer:
         if keycode == 65363:
             self.maze.width += 1
             self.seed = randint(0,9999)
-            self.generator = self.gen.create_maze(self.maze, self.seed)
+            self.generator = self.gen.create_maze(self.maze, self.seed, self.player)
             self.restart()
             self.show_menu()
 
@@ -1040,7 +1049,7 @@ class MazeVisualizer:
         if keycode == 65364:
             self.maze.height += 1
             self.seed = randint(0,9999)
-            self.generator = self.gen.create_maze(self.maze, self.seed)
+            self.generator = self.gen.create_maze(self.maze, self.seed, self.player)
             self.restart()
             self.show_menu()
 
@@ -1049,7 +1058,8 @@ class MazeVisualizer:
             self.img = Image(self.m, self.mlx, self.win, self.maze)
             self.img.thickness = thickness
             self.bool = True
-        self.brick.size = img.scale
+        print(img.scale)
+        self.brick.size = self.img.scale
         self.brick.texture_create()
         self.time = datetime.now()
         self.make_lines()

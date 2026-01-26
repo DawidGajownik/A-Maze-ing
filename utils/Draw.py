@@ -4,23 +4,6 @@ from enums import Axle, Sign, Direction
 from typing import Optional
 class Draw():
 
-    def _set_pixel(cls, img: Image, x: int, y: int, color: int):
-        offset = y * img.size_line + x * (img.bits_per_pixel // 8)
-        img.data[offset:offset+4] = bytes((
-            color & 0xFF,           # Blue
-            (color >> 8) & 0xFF,    # Green
-            (color >> 16) & 0xFF,   # Red
-            (color >> 24) & 0xFF    # Alpha
-        ))
-
-    def get_pixel(img: Image, x, y):
-        offset = y * img.size_line + x * img.bits_per_pixel // 8
-        blue = img.data[offset + 0]
-        green = img.data[offset + 1]
-        red = img.data[offset + 2]
-        transparency = img.data[offset + 3]
-        return (transparency << 24) | (red << 16) | (green << 8) | blue
-
     def _put_brick(
             cls, i: int, j: int, img, thickness: int, transparency: int,
             brick,
@@ -30,13 +13,9 @@ class Draw():
         size = img.scale
 
 
-        try:
-            for y in range(start_y, start_y + size - 1):
-                offset = (y * img.width + start_x) * 4
-                print(offset, offset + size * 4, size * 4, len(brick.row_1),  len(brick.row_3),  len(brick.mortar))
-                img.data[offset: offset + size * 4] = brick.mortar if y % brick.brick_h < brick.mortar_thickness_y else brick.row_1 if (y // brick.brick_h)%2 == 0 else brick.row_3
-        except ValueError as e:
-            print(e, offset, offset + size * 4, size * 4, len(brick.row_1),  len(brick.row_3),  len(brick.mortar))
+        for y in range(start_y, start_y + size - 1):
+            offset = (y * img.width + start_x) * 4
+            img.data[offset: offset + size * 4] = brick.mortar if y % brick.brick_h < brick.mortar_thickness_y else brick.row_1 if (y // brick.brick_h)%2 == 0 else brick.row_3
 
     def _put_block(cls, i: int, j: int, img, line: bytes, color:bytes, thickness: int) -> None:
 
@@ -48,7 +27,7 @@ class Draw():
 
         for y in range(start_y, start_y + size):
             offset = (y * img.width + start_x) * 4
-            img.data[offset: offset + size * 4] = line
+            img.data[offset: offset + size * 4] = row
 
     def _put_up(cls, m: Mlx, mlx: any, win: Window, line: bytes, color: bytes, i: int, j: int, img: Image, wall_range: tuple, out: bool) -> None:
 
@@ -206,6 +185,10 @@ class Draw():
                     img, i * img.scale + x + img.thickness,
                     j * img.scale + y + img.thickness, 0xFFaaaaaa)
 
+    def draw_path(
+            cls, 
+    ):
+        pass
 
     def draw_maze(
             cls, a: int, s: int, m: Mlx, mlx: any, maze, img: Image, win: Window, found, colors: dict, darken,
@@ -228,15 +211,15 @@ class Draw():
 
         #img.data[:maze.width*img.scale] = colors['Grid 2'] * (len(img.data)//4)
         wall_range = (-img.thickness+1, img.scale + img.thickness)
-        # for y in range(maze.height):
-        #     for x in range (maze.width):
-        #         if len(maze.map) > 0:
-        #             if (y * maze.width + x) not in found:
-        #                 cls._put_block(x, y, img, lines['Block not found'], 1)
-                #cls._put_up(m, mlx, win.ptr, colors['Grid 2'], x, y, img, wall_range, False)
-                #cls._put_down(m, mlx, win.ptr, colors['Grid 2'], x, y, img, maze, wall_range, False)
-                #cls._put_left(m, mlx, win.ptr, 0xFF202020, x, y, img, wall_range, False)
-                #cls._put_right(m, mlx, win.ptr, 0xFF202020, x, y, img, maze, wall_range, False)
+        for y in range(maze.height):
+            for x in range (maze.width):
+                if len(maze.map) > 0:
+                    if (y * maze.width + x) not in found:
+                        cls._put_block(x, y, img, lines['Block not found'], colors['Block not found'], 0)
+                #cls._put_up(m, mlx, win.ptr, lines['line_x'], colors['Grid 2'], x, y, img, wall_range, False)
+                #cls._put_down(m, mlx, win.ptr, lines['line_x'], colors['Grid 2'], x, y, img, maze, wall_range, False)
+                #cls._put_left(m, mlx, win.ptr, lines['line_y'], colors['Grid 2'], x, y, img, wall_range, False)
+                #cls._put_right(m, mlx, win.ptr, lines['line_y'], colors['Grid 2'], x, y, img, maze, wall_range, False)
         for y in range(maze.height):
             for x in range(maze.width):
                 if len(maze.map) > 0:
