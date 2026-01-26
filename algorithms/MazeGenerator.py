@@ -14,6 +14,7 @@ class MazeGenerator:
         self.height = height
         self.found: Set[int] = set()
         self.seed = seed
+        self.is_perfect = False
 
         self.set_42()
         self.set_neighbors()
@@ -66,7 +67,7 @@ class MazeGenerator:
             if cell == 0xF:
                 self.available_cells.remove(i)
 
-    def create_maze(self, manager, seed: int):
+    def create_maze(self, manager, seed: int, visualize: bool = False):
         self.prepare_data(seed, manager.width, manager.height)
 
         end = self.get_random_cell()
@@ -84,7 +85,7 @@ class MazeGenerator:
             num_cells = max(1, len(self.available_cells))
             visualisation_tempo: int = max(
                 3, int((num_cells * math.log10(num_cells)) / 2000))
-            #visualisation_tempo = 100
+            # visualisation_tempo = 100
             self.maze[start] = 16
             current_pos = start
 
@@ -99,14 +100,26 @@ class MazeGenerator:
                 manager.map = self.maze
 
                 i += 1
-                if i % visualisation_tempo == 0:
+                if visualize and i % visualisation_tempo == 0:
                     yield self.found
 
             self.save_new_path(path)
             path.clear()
 
+        if not self.is_perfect:
+            self.create_loops()
+
         manager.map = self.maze
         yield self.found
+
+    def create_loops(self):
+        end_blocks: Set[int] = {0b0111, 0b1011, 0b1101, 0b1110}
+
+        for i, cell in enumerate(self.maze):
+            if cell in end_blocks:
+                new_connection = self.maze_random.choice(self.neighbors[i])
+                direction = self.create_directions([i, new_connection])[0]
+                self.put_walls_in_cell(i, new_connection, direction)
 
     def get_maze_str(self):
         lines = []
