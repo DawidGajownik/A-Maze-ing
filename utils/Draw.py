@@ -13,7 +13,7 @@ class Draw():
         size = img.scale
 
 
-        for y in range(start_y, start_y + size - 1):
+        for y in range(start_y, start_y + size):
             offset = (y * img.width + start_x) * 4
             img.data[offset: offset + size * 4] = brick.mortar if y % brick.brick_h < brick.mortar_thickness_y else brick.row_1 if (y // brick.brick_h)%2 == 0 else brick.row_3
 

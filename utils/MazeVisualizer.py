@@ -364,7 +364,7 @@ class MazeVisualizer:
         self.freezed = False
         self.theme_idx = 1
         self.colors = copy(self.themes[self.theme_idx])
-        self.player = False
+        self.player = True
         self.path_finding = False
         self.palette = [
             # rząd 1
@@ -448,6 +448,8 @@ class MazeVisualizer:
             self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken, self.brick_visible, self.brick, self.lines)
 
         except StopIteration:
+            self.brick.mortar_color = bytes([30,30,30,self.transparency])
+            self.brick.texture_create()
             self.path_finding = True
             if (datetime.now() - self.time).total_seconds() < 3:
                 self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found,
@@ -770,7 +772,7 @@ class MazeVisualizer:
             'line_x': self.colors['Grid 1'] * (self.img.scale + 2 * self.img.thickness),
             'line_y': self.colors['Grid 1'] * self.img.thickness
         }
-        self.brick = Brick(self.img.scale, self.transparency)
+        self.brick = Brick(self.img.scale, self.transparency, self.colors['Block found'], bytes([30,30,30,255]))
         size = (
             10 if scale < 15 else
             15 if scale < 20 else
