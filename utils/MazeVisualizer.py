@@ -355,12 +355,14 @@ class MazeVisualizer:
             },
 
         }
+
         self.mouse = False
         self.slider_x = 0
         self.paused = False
         self.freezed = False
         self.theme_idx = 1
         self.colors = copy(self.themes[self.theme_idx])
+
         self.palette = [
             # rząd 1
             bytes([255, 255, 255, 255]), bytes([192, 192, 192, 255]), bytes([255, 192, 192, 255]),
@@ -403,6 +405,16 @@ class MazeVisualizer:
             bytes([64, 64, 0, 255]), bytes([0, 64, 0, 255]), bytes([0, 64, 64, 255]), bytes([0, 0, 64, 255]),
         ]
 
+    def make_lines(self):
+        self.lines = {
+            'Snake': self.colors['Snake'] * self.img.scale,
+            'Block not found': self.colors['Block not found'] * (self.img.scale - 1),
+            'Block found': self.colors['Block found'] * (self.img.scale - self.img.thickness),
+            '42': self.colors['42'] * (self.img.scale - self.img.thickness),
+            'line_x': self.colors['Grid 1'] * (self.img.scale + 2 * self.img.thickness - 1),
+            'line_y': self.colors['Grid 1'] * self.img.thickness
+        }
+
     def draw_slow(self, vars):
         if not self.bool or self.freezed:
             return
@@ -430,12 +442,12 @@ class MazeVisualizer:
             offset_y = (self.img.height - self.maze.height*self.img.scale)//2
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.start[0], self.maze.start[0] * self.img.scale + offset, self.maze.start[1] * self.img.scale + offset + offset_y)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.finish[0], self.maze.end[0] * self.img.scale + offset, self.maze.end[1] * self.img.scale + offset + offset_y)
-            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken, self.brick_visible, self.brick)
+            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken, self.brick_visible, self.brick, self.lines)
 
         except StopIteration:
             if (datetime.now() - self.time).total_seconds() < 3:
                 self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found,
-                                    self.colors, self.darken, self.brick_visible, self.brick)
+                                    self.colors, self.darken, self.brick_visible, self.brick, self.lines)
             else:
                 self.bool = False
 
@@ -732,6 +744,14 @@ class MazeVisualizer:
         self.win = Window(self.m, self.mlx, "A-Maze-ing")
         self.img = Image(self.m, self.mlx, self.win, self.maze)
         scale = self.img.scale
+        self.lines = {
+            'Snake': self.colors['Snake'] * self.img.scale,
+            'Block not found': self.colors['Block not found'] * (self.img.scale - 1),
+            'Block found': self.colors['Block found'] * (self.img.scale - self.img.thickness),
+            '42': self.colors['42'] * (self.img.scale - self.img.thickness),
+            'line_x': self.colors['Grid 1'] * (self.img.scale + 2 * self.img.thickness),
+            'line_y': self.colors['Grid 1'] * self.img.thickness
+        }
         self.brick = Brick(self.img.scale, self.transparency)
         size = (
             10 if scale < 15 else
@@ -781,7 +801,6 @@ class MazeVisualizer:
             'maze': self.maze,
             'draw': self.draw.draw_maze,
             'generator': generator,
-            'draw_out': self.draw.draw_out
         }
         self.m.mlx_key_hook(self.win.ptr, self.key_hook, self.vars)
         self.m.mlx_mouse_hook(self.win.ptr, self.mouse_hook, self.vars)
@@ -896,6 +915,7 @@ class MazeVisualizer:
                             self.show_menu()
         self.time = datetime.now()
         self.bool = True
+        self.make_lines()
         self.put_strings()
 
 
@@ -909,12 +929,13 @@ class MazeVisualizer:
         if keycode == 98:
             self.brick_visible = not self.brick_visible
         if keycode == 108:
-            if self.brick.bricks_in_row > 1:
+            if self.brick.bricks_in_row > 1 and self.brick.brick_w > 1:
                 self.brick.bricks_in_row -=1
         if keycode == 106:
-            self.brick.bricks_in_row +=1
+            if self.brick.brick_w > 2:
+                self.brick.bricks_in_row +=1
         if keycode == 105:
-            if self.brick.rows_in_block > 1:
+            if self.brick.rows_in_block > 2:
                 self.brick.rows_in_block -=1
         if keycode == 107:
             self.brick.rows_in_block +=1
@@ -1030,6 +1051,7 @@ class MazeVisualizer:
             self.bool = True
         self.brick.texture_create()
         self.time = datetime.now()
+        self.make_lines()
         self.bool = True
         if keycode == 65307:
             m.mlx_destroy_window(mlx, win.ptr)
