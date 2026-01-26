@@ -21,9 +21,11 @@ class PathFinder:
 
         while queue:
             current = queue.popleft()
+            yield current
+
             if current == self.exit:
-                print(current)
                 break
+
             for neighbor in self.find_neighbors(current):
                 if neighbor not in visited:
                     queue.append(neighbor)
@@ -38,6 +40,7 @@ class PathFinder:
 
         path.append(self.entry)
         path.reverse()
+        yield path
 
         return self.create_directions(path)
 
