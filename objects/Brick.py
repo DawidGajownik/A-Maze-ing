@@ -26,17 +26,19 @@ class Brick:
 
         self.rows_odd = [bytearray() for _ in range(21)]
         self.rows_even = [bytearray() for _ in range(21)]
+        a = 6
+        b = 9
 
         #self.row_1 = bytearray()
 
         for row in self.rows_odd:
             for _ in range(self.bricks_in_row - 1):
                 for _ in range (self.brick_w):
-                    row.extend(self.darken(self.color, randint(4,8)/10))
+                    row.extend(self.darken(self.color, randint(a,b)/10))
                 for _ in range (self.mortar_thickness_x):
                     row.extend(self.mortar_color)
             for _ in range (self.brick_w):
-                row.extend(self.darken(self.color, randint(4,8)/10))
+                row.extend(self.darken(self.color, randint(a,b)/10))
             for _ in range(self.size - sum_row_1):
                 row.extend(self.mortar_color)
             row = bytes(row)
@@ -45,16 +47,16 @@ class Brick:
 
         for row in self.rows_even:
             for i in range(self.half_brick_w):
-                row.extend(self.darken(self.color, randint(4, 8) / 10))
+                row.extend(self.darken(self.color, randint(a,b) / 10))
             for i in range(self.mortar_thickness_x):
                row.extend(self.mortar_color)
             for _ in range(self.bricks_in_row - 1):
                 for i in range(self.brick_w):
-                    row.extend(self.darken(self.color, randint(4,8) / 10))
+                    row.extend(self.darken(self.color, randint(a,b) / 10))
                 for i in range(self.mortar_thickness_x):
                     row.extend(self.mortar_color)
             for i in range(self.size - sum_row_3):
-                row.extend(self.darken(self.color, randint(4,8) / 10))
+                row.extend(self.darken(self.color, randint(a,b) / 10))
             row = bytes(row)
 
         #self.row_1 = (self.color * self.brick_w + self.mortar_color * self.mortar_thickness_x) * (
