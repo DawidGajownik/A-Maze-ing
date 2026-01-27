@@ -5,7 +5,8 @@ import math
 
 
 class MazeGenerator:
-    def prepare_data(self, seed: int, width: int, height: int) -> None:
+    def prepare_data(self, seed: int, width: int, height: int,
+                     is_perfect: bool) -> None:
         self.maze_random = Random()
         self.maze_random.seed(seed)
         self.maze: List[Union[bool, int]] = [False] * (width * height)
@@ -14,14 +15,15 @@ class MazeGenerator:
         self.height = height
         self.found: Set[int] = set()
         self.seed = seed
-        self.is_perfect = True
+        self.is_perfect = is_perfect
+        self.visualisation_tempo = 1
 
-        self.set_42()
+        if height > 7 and width > 8:
+            self.set_42()
         self.set_neighbors()
         self.remove_42_from_available()
 
-    def set_42(self):
-        pass
+    def set_42(self) -> None:
         x = self.width // 2
         y = self.height // 2
 
@@ -68,24 +70,20 @@ class MazeGenerator:
                 self.available_cells.remove(i)
 
     def create_maze(self, manager, seed: int, visualize: bool = False):
-        self.prepare_data(seed, manager.width, manager.height)
+        self.prepare_data(seed, manager.width, manager.height,
+                          manager.is_perfect)
 
         end = self.get_random_cell()
         self.maze[end] = 0b1111
         self.found.add(end)
         path_found: bool = False
         path: List[int] = []
-        # visualisation_tempo: int = max(1, (self.width * self.height) // 100)
         i: int = 0
 
         while self.available_cells:
             start = self.get_random_cell()
             path.append(start)
 
-            num_cells = max(1, len(self.available_cells))
-            visualisation_tempo: int = max(
-                3, int((num_cells * math.log10(num_cells)) / 2000))
-            # visualisation_tempo = 100
             self.maze[start] = 16
             current_pos = start
 
@@ -100,7 +98,7 @@ class MazeGenerator:
                 manager.map = self.maze
 
                 i += 1
-                if visualize and i % visualisation_tempo == 0:
+                if visualize and i % self.visualisation_tempo == 0:
                     yield self.found
 
             self.save_new_path(path)
