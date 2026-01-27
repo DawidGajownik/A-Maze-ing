@@ -29,7 +29,7 @@ class MazeManager:
 
     def draw(self, seed):
         self.visualizer = MazeVisualizer(self, (1, 1), (14, 14))
-        self.visualizer.drawq(self.generator, seed)
+        self.visualizer.open_window(self.generator, seed)
 
     def find(self):
         self.path = self.finder.find_path(self)
