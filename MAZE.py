@@ -7,7 +7,8 @@ from random import randint
 
 class MazeManager:
     def __init__(self, width: int, height: int,
-                 entry: Tuple[int, int], exit: Tuple[int, int]):
+                 entry: Tuple[int, int], exit: Tuple[int, int],
+                 is_perfect: bool):
         self.generator = MazeGenerator()
         self.finder = PathFinder()
         self.visualizer: MazeVisualizer
@@ -17,6 +18,7 @@ class MazeManager:
         self.exit = exit[1] * width + exit[0]
         self.start = entry
         self.end = exit
+        self.is_perfect = is_perfect
         self.map: List[int, bool] = []
         self.str_map = []
         self.path: str = ""

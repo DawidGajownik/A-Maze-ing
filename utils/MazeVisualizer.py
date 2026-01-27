@@ -34,7 +34,7 @@ class MazeVisualizer:
         self.player = True
         self.path_finding = False
 
-        self.slider_x = 0
+        self.slider_x = 1
         self.theme_idx = 1
 
         self.finder = maze.finder.find_path(maze)
@@ -140,6 +140,7 @@ class MazeVisualizer:
                     self.menu_showed = True
             if not self.paused:
                 self.found = next(self.generator)
+                self.gen.visualisation_tempo = self.slider_x
             self.background_img_data[:] = self.darken(self.colors['Background'], 0.6) * (len(self.background_img_data) // 4)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
             offset = (self.img.scale - self.start[1])//2
@@ -376,7 +377,8 @@ class MazeVisualizer:
             result = (x - self.win.width // 128 * 119) - self.corrector.width//2
             result = result * 100 // self.slider.width
             result = result if result <= 100 else 100
-            self.slider_x = result if result >=0 else 0
+            self.slider_x = result if result >= 1 else 1
+            self.gen.visualisation_tempo = self.slider_x
 
         blocks = {
             '42': {

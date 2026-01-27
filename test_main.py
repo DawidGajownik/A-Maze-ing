@@ -22,7 +22,7 @@ def main() -> None:
         exit = int(exit[0]), int(exit[1])
         output = config["OUTPUT_FILE"]
         perfect = config["PERFECT"].lower() == "true"
-        manager = MazeManager(width, height, entry, exit)
+        manager = MazeManager(width, height, entry, exit, perfect)
         manager.draw(int(config['SEED']) if config['SEED'] else randint(1, 9999))
         s = manager.generator.get_maze_str()
         with open(output, "w") as file:
@@ -30,7 +30,6 @@ def main() -> None:
 
     except KeyError as e:
         raise RuntimeError(f"Brakuje klucza w configu: {e}")
-
 
 
 if __name__ == "__main__":

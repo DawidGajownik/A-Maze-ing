@@ -191,7 +191,7 @@ class Draw():
         if isinstance(list, int):
             x = list % maze.width
             y = list // maze.width
-            cls._put_block(x, y, img, lines['Snake'], colors['Snake'][:3] + bytes([3]), img.thickness)
+            cls._put_block(x, y, img, lines['Snake'], colors['Snake'][:3] + bytes([5]), img.thickness)
             m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, offset)
             m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
 
