@@ -1,6 +1,8 @@
 from copy import copy
 from datetime import datetime
 from random import randint
+from venv import create
+
 from enums import Direction
 from mlx import Mlx
 from objects import Image, Maze, Window, Brick
@@ -50,6 +52,7 @@ class MazeVisualizer:
         self.create_blocks()
         self.map_keys()
         self.set_images_and_position()
+        self.set_palettes_data()
 
     def load_images(self):
         self.icon_size = self.get_icon_size()
@@ -61,6 +64,8 @@ class MazeVisualizer:
         self.start = self.m.mlx_png_file_to_image(self.mlx, f"pictures/start{self.icon_size}.png")
         self.finish = self.m.mlx_png_file_to_image(self.mlx, f"pictures/finish{self.icon_size}.png")
         self.refresh = self.m.mlx_png_file_to_image(self.mlx, "pictures/refresh.png")
+        self.pause_black = self.m.mlx_png_file_to_image(self.mlx, "pictures/pause_black.png")
+        self.play_black = self.m.mlx_png_file_to_image(self.mlx, "pictures/play_black.png")
 
     def create_elements(self):
         self.brick = Brick(self.img.scale, self.transparency, self.darken, self.colors['Block found'], bytes([30, 30, 30, 30]))
@@ -86,15 +91,14 @@ class MazeVisualizer:
         }
 
     def create_background_images(self):
-        self.background_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 8 * 7, self.win.height)
-        self.background_img_data = self.m.mlx_get_data_addr(self.background_img.ptr)[0]
-        self.background_img_data[:] = self.darken(self.colors['Background'], 0.6) * (len(self.background_img_data) // 4)
+        self.strings_background = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 8,
+                                        self.win.height // 8)
+        self.strings_background.data[:] = bytes([0, 0, 0, 255]) * (len(self.strings_background.data) // 4)
+        self.background_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width, self.win.height)
+        self.background_img.data[:] = bytes([0, 0, 0, 255]) * (len(self.background_img.data) // 4)
         self.menu_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 8, self.win.height)
-        self.menu_img_data = self.m.mlx_get_data_addr(self.menu_img.ptr)[0]
-        self.menu_img_data[:] = self.darken(self.colors['Background'], 0.6) * (len(self.menu_img_data) // 4)
-        self.strings_background = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 64 * 4,
-                                        self.win.height // 64 * 5)
-        self.strings_background_data = self.m.mlx_get_data_addr(self.strings_background.ptr)[0]
+        self.menu_img.data[:] = self.darken(self.colors['Background'], 0.6) * (len(self.menu_img.data) // 4)
+
 
     def create_blocks(self):
         self.blocks = {
@@ -187,6 +191,56 @@ class MazeVisualizer:
             },
         }
 
+    def set_palettes_data(self):
+        self.palettes_descriptions_with_height_multiplier = {
+            "42": 1,
+            "Grid found": 9,
+            "Grid not found": 17,
+            "Block found": 25,
+            "Block not found": 33,
+            "Snake": 41,
+            "Background": 49
+        }
+
+    def set_menu_data(self):
+        self.menu_data = {
+            "Y=" + str(self.maze.height):
+                {
+                    'width': self.win.width // 64 * 57,
+                    'height': self.win.height // 64 * 56
+                },
+            "X=" + str(self.maze.width):
+                {
+                    'width': self.win.width // 64 * 57,
+                    'height': self.win.height // 64 * 57
+                },
+            f"S={self.seed}":
+                {
+                    'width': self.win.width // 64 * 57,
+                    'height': self.win.height // 64 * 58
+                },
+            "Tr=" + str(self.transparency) + "(w/s)":
+                {
+                    'width': self.win.width // 64 * 57,
+                    'height': self.win.height // 64 * 61
+                },
+            "Th=" + str(self.theme_idx) + "(a/d)":
+                {
+                    'width': self.win.width // 64 * 57,
+                    'height': self.win.height // 64 * 62
+                },
+            "Thi=" + str(self.img.thickness) + "(+/-)":
+                {
+                    'width': self.win.width // 64 * 57,
+                    'height': self.win.height // 64 * 63
+                },
+            f"{self.slider_x}x":
+                {
+                    'width': self.win.width * 251 // 256,
+                    'height': self.win.height * 231 // 256
+                }
+        }
+
     def draw_maze(self, vars):
         if not self.bool or self.freezed:
             if self.path_finding:
@@ -201,21 +255,11 @@ class MazeVisualizer:
                     for color in self.colors:
                         if color != 'name':
                             self.colors[color] = self.transparent(self.colors[color], self.transparency)
-                    self.put_strings()
-            else:
-                if not self.menu_showed:
-                    self.show_menu()
-                    self.put_strings()
-                    self.menu_showed = True
             if not self.paused:
                 self.found = next(self.generator)
                 self.gen.visualisation_tempo = self.slider_x
-            self.background_img_data[:] = self.darken(self.colors['Background'], 0.6) * (len(self.background_img_data) // 4)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
-            offset = (self.img.scale - self.start[1])//2
-            offset_y = (self.img.height - self.maze.height*self.img.scale)//2
-            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.start[0], self.maze.start[0] * self.img.scale + offset, self.maze.start[1] * self.img.scale + offset + offset_y)
-            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.finish[0], self.maze.end[0] * self.img.scale + offset, self.maze.end[1] * self.img.scale + offset + offset_y)
+            self.show_menu()
             self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken, self.brick_visible, self.brick, self.lines, self.offset)
             self.time = datetime.now()
 
@@ -223,21 +267,25 @@ class MazeVisualizer:
             if not self.path_finding:
                 self.path_finding = True
                 self.bool = False
-            if (datetime.now() - self.time).total_seconds() < 3:
-                self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found,
-                                    self.colors, self.darken, self.brick_visible, self.brick, self.lines, self.offset)
-                if self.path_finding:
-                    for color in self.colors:
-                        if color != 'name':
-                            self.colors[color] = self.transparent(self.colors[color], self.transparency)
-                    self.bool = False
-                    self.draw_path()
+            # if (datetime.now() - self.time).total_seconds() < 3:
+            #     self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+            #
+            #     self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found,
+            #                         self.colors, self.darken, self.brick_visible, self.brick, self.lines, self.offset)
+            #     if self.path_finding:
+            #         for color in self.colors:
+            #             if color != 'name':
+            #                 self.colors[color] = self.transparent(self.colors[color], self.transparency)
+            #         self.bool = False
+            #         self.draw_path()
 
     def draw_path(self):
         try:
             self.path = next(self.finder)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.img.ptr, 0, self.offset)
+            self.show_menu()
+
             self.draw.draw_path(self.m, self.mlx, self.maze, self.path_img, self.final_path_img, self.win, self.path, self.colors, self.lines, self.offset)
         except StopIteration as e:
             self.path_finding = False
@@ -253,10 +301,10 @@ class MazeVisualizer:
         color_block_height = height//10 - 3
         l_size = line_size // 4
         wid = (l_size - 16 * space_size) // 8
-        sequence = bytes()
+        sequence = bytearray()
         background = bytes([0, 0, 0, 0])
         for i in range (8):
-            sequence = sequence + ((
+            sequence.extend((
                         bytes([0,0,0,0]) * (l_size * space_size) +  #odstep y
                         (
                             #biała linia y
@@ -292,7 +340,7 @@ class MazeVisualizer:
                         ) +
                         background * (l_size * space_size) #odstep y
                 ))
-        data[:] = ( sequence
+        data[:] = ( bytes(sequence)
                 + background * l_size + b'\x00' * len(data)
             )[:leng]
         self.segment_height = self.colors_block.height // 32
@@ -310,59 +358,28 @@ class MazeVisualizer:
         r, g, b, a = color
         return bytes([r, g, b, level])
 
-    def restart(self):
-        self.background_img_data[:] = self.darken(self.colors['Background'], 0.6) * (
-                    len(self.background_img_data) // 4)
-        self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
-    def show_menu(self):
-        self.menu_img_data[:] = self.darken((self.colors['Background'][:3] + bytes([255])), 0.6) * (
-                    len(self.menu_img_data) // 4)
-        
-        self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.menu_img.ptr, self.win.width // 8 * 7, 0)
+    def put_palettes_descriptions(self):
+        for name, multiplier in self.palettes_descriptions_with_height_multiplier.items():
+            self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * multiplier, 0xFFFFFFFF,name)
 
-        for multiplier in self.color_blocks_height_multipliers:
-            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.colors_block.ptr, self.win.width // 64 * 60,
-                                       self.win.height // 64 * multiplier)
-        
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64, 0xFFFFFFFF,
-        #                       "42")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 9, 0xFFFFFFFF,
-        #                       "Gr 1")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 17, 0xFFFFFFFF,
-        #                       "Gr 2")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 25, 0xFFFFFFFF,
-        #                       "B 1")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 33, 0xFFFFFFFF,
-        #                       "B 2")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 41, 0xFFFFFFFF,
-        #                       "S")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 49, 0xFFFFFFFF,
-        #                       "Bckg")
+    def edit_menu(self):
+        self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.strings_background.ptr, self.win.width // 64 * 56,
+                                       self.win.height // 64 * 56)
+        self.set_menu_data()
 
-
-    def put_strings(self):
-        self.show_menu()
-        #self.strings_background_data[:] = self.darken((self.colors['Background'][:3] + bytes([255])), 0.6) * (len(self.strings_background_data) // 4)
-        #self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.strings_background.ptr, self.win.width // 64 * 57, self.win.height // 64 * 57)
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 58, 0xFFFFFFFF,
-        #                         f"S = {self.seed}")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 59, 0xFFFFFFFF,
-        #                       "X = " + str(self.maze.width) + "(l/ri)")
-        # self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 56, 0xFFFFFFFF,
-        #                       "Y = " + str(self.maze.height) + "(up/dn)")
-        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 61, 0xFFFFFFFF,
-                              "T = " + str(self.transparency) + "(w/s)")
-        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 62, 0xFFFFFFFF,
-                              "Thm = " + self.themes[self.theme_idx]['name'] + "(a/d)")
-        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 64 * 57, self.win.height // 64 * 63, 0xFFFFFFFF,
-                              "Th = " + str(self.img.thickness) + "(+/-)")
-        self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width * 251 // 256, self.win.height * 231 // 256, 0xFFFFFFFF, f"{self.slider_x}")
-
-
+        for name, position in self.menu_data.items():
+            self.m.mlx_string_put(self.mlx, self.win.ptr, position['width'], position['height'], 0xFFFFFFFF, name)
         for img, position in self.images_with_height_and_width.items():
             if self.theme_changed() or img != self.save[0]:
                 self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, img, position['width'], position['height'])
 
+
+    def show_menu(self):
+        # for multiplier in self.color_blocks_height_multipliers:
+        #     self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.colors_block.ptr, self.win.width // 64 * 60,
+        #                                    self.win.height // 64 * multiplier)
+        self.edit_menu()
+        #self.put_palettes_descriptions()
 
     def theme_changed(self):
         for a, b in zip(self.themes[self.theme_idx].values(), self.colors.values()):
@@ -371,11 +388,9 @@ class MazeVisualizer:
         return False
     
     def open_window(self, generator, seed):
-        self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
         self.gen = generator
         self.seed = seed
         self.show_menu()
-        self.put_strings()
         self.vars = {
             'm': self.m,
             'mlx': self.mlx,
@@ -403,8 +418,7 @@ class MazeVisualizer:
         if self.theme_changed() and self.cursor_over_save_icon(x, y):
             self.themes[self.theme_idx] = copy(self.colors)
         if self.cursor_over_refresh_icon(x, y):
-            self.player = not self.player
-            self.generator = self.gen.create_maze(self.maze, self.seed, self.player)
+            self.generate_new_maze(False)
         if self.cursor_over_play_or_pause_icon(x, y):
             self.paused = not self.paused
         if self.cursor_over_freeze_icon(x, y):
@@ -424,13 +438,12 @@ class MazeVisualizer:
                         row = int(y_rel // block_width)
                         col = int(x_rel // block_width)
                         self.colors[name] = self.transparent(self.palette[row*8+col], self.transparency)
-                        if name == 'Background':
-                            self.show_menu()
         self.time = datetime.now()
         self.bool = True
         self.set_images_and_position()
         self.make_lines()
-        self.put_strings()
+        #self.show_menu()
+
 
 
     def key_hook(self, keycode, vars):
@@ -495,12 +508,10 @@ class MazeVisualizer:
 
         if self.is_key('numpad-plus', keycode):
             self.img.thickness += 1
-            self.put_strings()
 
         if self.is_key('numpad-minus', keycode):
             if (self.img.thickness > 1):
                 self.img.thickness -= 1
-                self.put_strings()
 
         if self.is_key('left-arrow', keycode) and self.maze.width > 4:
             self.maze.width -= 1
@@ -520,6 +531,7 @@ class MazeVisualizer:
 
         self.brick.size = self.img.scale
         self.brick.texture_create()
+        #self.edit_menu()
         self.time = datetime.now()
         self.make_lines()
         self.bool = True
@@ -535,7 +547,6 @@ class MazeVisualizer:
         elif self.transparency > 0:
             self.transparency -= 1
         self.create_colors()
-        self.put_strings()
 
     def increase_transparency(self):
         if self.transparency < 5:
@@ -543,28 +554,23 @@ class MazeVisualizer:
         elif self.transparency < 255:
             self.transparency +=5
         self.create_colors()
-        self.put_strings()
 
     def set_theme(self):
         self.colors = copy(self.themes[self.theme_idx])
         self.create_colors()
-        self.show_menu()
-        self.put_strings()
 
     def generate_new_maze(self, new_seed: bool):
+        self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
         self.seed = randint(0,9999) if new_seed else self.seed
         self.generator = self.gen.create_maze(self.maze, self.seed, self.player)
         self.finder = self.maze.finder.find_path(self.maze)
         self.path_img = Image(self.m, self.mlx, self.win, self.maze)
         self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
-        self.bool = True
-        self.restart()
-        self.show_menu()
-        self.put_strings()
         thickness = self.img.thickness
         self.img = Image(self.m, self.mlx, self.win, self.maze)
         self.img.thickness = thickness
-        self.bool = True
+        if not self.path_finding:
+            self.bool = True
 
     def create_colors(self):
         for color in self.colors:
