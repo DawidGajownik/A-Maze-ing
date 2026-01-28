@@ -16,7 +16,7 @@ class Draw():
 
 
         for y in range(start_y, start_y + size):
-            idx = y%20
+            idx = y%(brick.lines_amount-1)
             brick_even = brick.rows_even[idx]
             brick_odd = brick.rows_odd[idx]
             offset = (y * img.width + start_x) * 4
