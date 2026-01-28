@@ -96,6 +96,8 @@ class MazeVisualizer:
         self.strings_background.data[:] = bytes([0, 0, 0, 255]) * (len(self.strings_background.data) // 4)
         self.background_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width, self.win.height)
         self.background_img.data[:] = bytes([0, 0, 0, 255]) * (len(self.background_img.data) // 4)
+        self.background_img_with_transparency = Image(self.m, self.mlx, self.win, self.maze, self.win.width, self.win.height)
+        self.background_img_with_transparency.data[:] = bytes([0, 0, 0, self.transparency]) * (len(self.background_img_with_transparency.data) // 4)
         self.menu_img = Image(self.m, self.mlx, self.win, self.maze, self.win.width // 8, self.win.height)
         self.menu_img.data[:] = self.darken(self.colors['Background'], 0.6) * (len(self.menu_img.data) // 4)
 
@@ -249,7 +251,7 @@ class MazeVisualizer:
         try:
             diff = (datetime.now() - self.start_time).total_seconds()*2
             transparency = int((diff*diff))
-            if 0 < transparency < 26:
+            if 0 < transparency < 25:
                 if self.transparency != transparency:
                     self.transparency = transparency
                     for color in self.colors:
@@ -258,35 +260,24 @@ class MazeVisualizer:
             if not self.paused:
                 self.found = next(self.generator)
                 self.gen.visualisation_tempo = self.slider_x
-            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img_with_transparency.ptr, 0, 0)
             self.show_menu()
-            self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.darken, self.brick_visible, self.brick, self.lines, self.offset)
+            self.draw.draw_maze(self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.brick_visible, self.brick, self.lines, self.offset)
             self.time = datetime.now()
 
         except StopIteration:
             if not self.path_finding:
                 self.path_finding = True
                 self.bool = False
-            # if (datetime.now() - self.time).total_seconds() < 3:
-            #     self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
-            #
-            #     self.draw.draw_maze(self.x, self.y, self.m, self.mlx, self.maze, self.img, self.win, self.found,
-            #                         self.colors, self.darken, self.brick_visible, self.brick, self.lines, self.offset)
-            #     if self.path_finding:
-            #         for color in self.colors:
-            #             if color != 'name':
-            #                 self.colors[color] = self.transparent(self.colors[color], self.transparency)
-            #         self.bool = False
-            #         self.draw_path()
 
     def draw_path(self):
         try:
             self.path = next(self.finder)
-            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img_with_transparency.ptr, 0, 0)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.img.ptr, 0, self.offset)
             self.show_menu()
 
-            self.draw.draw_path(self.m, self.mlx, self.maze, self.path_img, self.final_path_img, self.win, self.path, self.colors, self.lines, self.offset)
+            self.draw.draw_path(self.m, self.mlx, self.maze, self.img, self.path_img, self.final_path_img, self.win, self.path, self.colors, self.lines, self.offset)
         except StopIteration as e:
             self.path_finding = False
             self.bool = False
@@ -514,18 +505,26 @@ class MazeVisualizer:
                 self.img.thickness -= 1
 
         if self.is_key('left-arrow', keycode) and self.maze.width > 4:
+            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+
             self.maze.width -= 1
             self.generate_new_maze(True)
 
         if self.is_key('up-arrow', keycode) and self.maze.height > 4:
+            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+
             self.maze.height -= 1
             self.generate_new_maze(True)
 
         if self.is_key('right-arrow', keycode):
+            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+
             self.maze.width += 1
             self.generate_new_maze(True)
 
         if self.is_key('down-arrow', keycode):
+            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+
             self.maze.height += 1
             self.generate_new_maze(True)
 

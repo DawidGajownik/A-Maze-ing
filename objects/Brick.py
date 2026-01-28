@@ -9,8 +9,10 @@ class Brick:
         self.darken = darken
         self.size = size
         self.transparency = transparency
-        self.color = bytes([28, 53, 116, max(255, self.transparency * 2)]) if color else color
-        self.mortar_color = bytes([100, 150, 200, max(255, self.transparency * 2)]) if mortar_color is None else mortar_color
+        color = None
+        mortar_color = None
+        self.color = bytes([28, 53, 116, max(255, self.transparency * 8)]) if not color else color[:3] + bytes([255])
+        self.mortar_color = bytes([30, 30, 30, 255]) if not mortar_color else mortar_color[:3] + bytes([255])
         self.lines_amount = 21
         self.texture_create()
 
