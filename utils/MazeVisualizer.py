@@ -43,7 +43,7 @@ class MazeVisualizer:
         self.img = Image(self.m, self.mlx, self.win, self.maze)
         self.path_img = Image(self.m, self.mlx, self.win, self.maze)
         self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
-        self.offset = (self.img.height - self.maze.height * self.img.scale) // 2
+        self.offset = (self.img.height - self.maze.height * self.img.scale) // 2 - 8
         self.color_blocks_height_multipliers = [1, 9, 17, 25, 33, 41, 49]
         self.make_lines()
         self.load_images()
@@ -260,9 +260,10 @@ class MazeVisualizer:
             if not self.paused:
                 self.found = next(self.generator)
                 self.gen.visualisation_tempo = self.slider_x
+            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.start[0], self.enter[0]*self.img.scale, self.enter[1]*self.img.scale)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img_with_transparency.ptr, 0, 0)
             self.show_menu()
-            self.draw.draw_maze(self.m, self.mlx, self.maze, self.img, self.win, self.found, self.colors, self.brick_visible, self.brick, self.lines, self.offset)
+            self.draw.draw_maze(self.m, self.mlx, self.maze, self.img, self.win, self.found[0], self.colors, self.brick_visible, self.brick, self.lines, self.offset)
             self.time = datetime.now()
 
         except StopIteration:
@@ -273,6 +274,7 @@ class MazeVisualizer:
     def draw_path(self):
         try:
             self.path = next(self.finder)
+            self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.start[0], self.enter[0]*self.img.scale, self.enter[1]*self.img.scale)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.background_img_with_transparency.ptr, 0, 0)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr, self.img.ptr, 0, self.offset)
             self.show_menu()
@@ -447,6 +449,7 @@ class MazeVisualizer:
             m.mlx_loop_exit(mlx)
         
         if self.is_key('b', keycode):
+            print('cegla', self.brick_visible)
             self.brick_visible = not self.brick_visible
 
         if self.is_key('l', keycode):

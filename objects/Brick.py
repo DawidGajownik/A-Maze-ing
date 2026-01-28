@@ -29,7 +29,7 @@ class Brick:
 
         self.rows_odd = [bytearray() for _ in range(self.lines_amount)]
         self.rows_even = [bytearray() for _ in range(self.lines_amount)]
-        a = 2
+        a = 6
         b = 9
 
         for row in self.rows_odd:

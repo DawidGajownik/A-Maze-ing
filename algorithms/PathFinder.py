@@ -1,17 +1,49 @@
-from typing import Dict, List, Deque, Set, Iterator
+from typing import Dict, List, Deque, Set, Generator, Union
 from enums import Direction
 from collections import deque
 
 
 class PathFinder:
-    def prepare_data(self, manager):
+    def prepare_data(self, manager) -> None:
         self.entry: int = manager.entry
         self.exit: int = manager.exit
         self.height: int = manager.height
         self.width: int = manager.width
         self.maze: int = manager.map
 
-    def find_path(self, manager):
+    def find_path_instant(self, manager) -> str:
+        self.prepare_data(manager)
+
+        maze_connections: Dict[int, int] = {}
+        queue: Deque[int] = deque([self.entry])
+        current: int = self.entry
+        visited: Set[int] = {self.entry}
+
+        while queue:
+            current = queue.popleft()
+
+            if current == self.exit:
+                break
+
+            for neighbor in self.find_neighbors(current):
+                if neighbor not in visited:
+                    queue.append(neighbor)
+                    visited.add(neighbor)
+                    maze_connections[neighbor] = current
+
+        path: List[int] = []
+
+        while current != self.entry:
+            path.append(current)
+            current = maze_connections[current]
+
+        path.append(self.entry)
+        path.reverse()
+
+        return self.get_str_path(path)
+
+    def find_path(self, manager) -> Generator[Union[int, List[int]],
+                                              None, None]:
         self.prepare_data(manager)
 
         maze_connections: Dict[int, int] = {}
@@ -42,9 +74,11 @@ class PathFinder:
         path.reverse()
         yield path
 
-        return self.create_directions(path)
+        return self.get_str_path(path)
 
-    def find_neighbors(self, current: int) -> Iterator[int]:
+    def find_neighbors(self, current: int) -> Generator[int,
+                                                        None,
+                                                        None]:
         val = self.maze[current]
 
         if not (val & (1 << Direction.NORTH.value)):
@@ -56,7 +90,7 @@ class PathFinder:
         if not (val & (1 << Direction.WEST.value)):
             yield current - 1
 
-    def create_directions(self, path: List[int]) -> str:
+    def get_str_path(self, path: List[int]) -> str:
         directions: List[str] = []
 
         previous: int = None

@@ -16,12 +16,8 @@ class MazeManager:
         self.width = width
         self.entry = entry[1] * width + entry[0]
         self.exit = exit[1] * width + exit[0]
-        self.start = entry
-        self.end = exit
         self.is_perfect = is_perfect
         self.map: List[int, bool] = []
-        self.str_map = []
-        self.path: str = ""
 
     def generate(self, seed: int = None):
         if seed is None:

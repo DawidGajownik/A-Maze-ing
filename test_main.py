@@ -20,16 +20,31 @@ def main() -> None:
         exit = str((config["EXIT"])).split(",")
         entry = int(entry[0]), int(entry[1])
         exit = int(exit[0]), int(exit[1])
+        if (entry[0] < 0 or entry[0] > width - 1
+            or entry[1] < 0 or entry[1] > height - 1
+            or exit[0] < 0 or exit[0] > width - 1
+                or exit[1] < 0 or exit[1] > height - 1):
+            print("Invalid (start, end) coordinates.")
+            return
         output = config["OUTPUT_FILE"]
         perfect = config["PERFECT"].lower() == "true"
         manager = MazeManager(width, height, entry, exit, perfect)
-        manager.draw(int(config['SEED']) if config['SEED'] else randint(1, 9999))
-        s = manager.generator.get_maze_str()
+        seed = int(config['SEED']) if 'SEED' in list(config.keys()) else randint(1, 9999)
+        maze_map_hex = manager.generator.create_maze_instant(manager, seed)
+        path_str = manager.finder.find_path_instant(manager)
+
         with open(output, "w") as file:
-            file.write(str(s))
+            file.write(maze_map_hex)
+            file.write(f"\n\n{entry[0]},{entry[1]}\n")
+            file.write(f"{exit[0]},{exit[1]}\n")
+            file.write(f"{path_str}\n")
+
+        manager.draw(seed)
 
     except KeyError as e:
-        raise RuntimeError(f"Brakuje klucza w configu: {e}")
+        print(f"Brakuje klucza w configu: {e}")
+    except ValueError as e:
+        print(e)
 
 
 if __name__ == "__main__":

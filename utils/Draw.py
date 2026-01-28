@@ -29,6 +29,7 @@ def _put_brick(
 
     for y in range(start_y, start_y + size):
         idx = y%(brick.lines_amount-1)
+        idx = randint(0, brick.lines_amount - 1)
         brick_even = brick.rows_even[idx]
         brick_odd = brick.rows_odd[idx]
         offset = (y * img.width + start_x) * 4
@@ -200,31 +201,9 @@ class Draw():
             brick_visible: bool,
             brick: Brick, lines: dict, offset: int
             ) -> None:
-        row_pixels = img.width
-        fill_pixels = maze.width * img.scale + img.thickness*2
-        rest_pixels = row_pixels - fill_pixels
-
-        for row in range(maze.height * img.scale + img.thickness*2):
-            row_start = row * img.width * 4
-            row_end = row_start + img.width * 4
-
-            # Zamaluj pierwszą część
-            img.data[row_start:row_start + fill_pixels * 4] = colors['Grid 2'] * fill_pixels
-
-            # Zamaluj resztę wiersza
-            #img.data[row_start + fill_pixels * 4: row_end] = darken(colors['Background'][:3] + bytes([255]), 0.6) * rest_pixels
-
-        #img.data[:maze.width*img.scale] = colors['Grid 2'] * (len(img.data)//4)
+        
+        img.data[:] = colors['Grid 2'] * (len(img.data)//4)
         wall_range = (-img.thickness+1, img.scale + img.thickness)
-        # for y in range(maze.height):
-        #     for x in range (maze.width):
-        #         if len(maze.map) > 0:
-        #             if (y * maze.width + x) not in found:
-        #                 _put_block(x, y, img, colors['Block not found'], 0)
-        #         #_put_up(colors['Grid 2'], x, y, img, wall_range, img.thickness)
-        #         #_put_down(colors['Grid 2'], x, y, img, maze, wall_range, img.thickness)
-        #         #_put_left(colors['Grid 2'], x, y, img, wall_range, img.thickness)
-        #         #_put_right(colors['Grid 2'], x, y, img, maze, wall_range, img.thickness)
         for y in range(maze.height):
             for x in range(maze.width):
                 if len(maze.map) > 0:
@@ -257,13 +236,9 @@ class Draw():
                                 _put_up(colors['Grid 1'], x - 1, y, img, wall_range, img.thickness)
                                 _put_down(colors['Grid 1'], x - 1, y - 1, img, maze, wall_range, img.thickness)
                         if maze.map[(y - 1) * maze.width + x] == 16:
-                             if maze.map[(y-1) * maze.width + x - 1] != 16:
-                                 _put_left(colors['Grid 1'], x, y - 1, img, wall_range, img.thickness)
-                                 _put_right(colors['Grid 1'], x - 1, y - 1, img, maze, wall_range, img.thickness)
-                    #if y * maze.width + x == maze.entry:
-                        #_put_block(x, y, img, bytes([0, 255, 0, 10]), img.thickness)
-                    #if y * maze.width + x == maze.exit:
-                        #_put_block(x, y, img, bytes([255, 0, 0, 10]), img.thickness)
+                            if maze.map[(y-1) * maze.width + x - 1] != 16:
+                                _put_left(colors['Grid 1'], x, y - 1, img, wall_range, img.thickness)
+                                _put_right(colors['Grid 1'], x - 1, y - 1, img, maze, wall_range, img.thickness)
                     if maze.map[y * maze.width + x] & (1 << Direction.SOUTH.value):
                         _put_down(colors['Grid 1'], x, y, img, maze, wall_range, img.thickness)
                         _put_up(colors['Grid 1'], x, y + 1, img, wall_range, img.thickness)
