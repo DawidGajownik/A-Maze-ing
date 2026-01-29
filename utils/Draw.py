@@ -343,7 +343,6 @@ class Draw():
             m.mlx_put_image_to_window(mlx, win.ptr, path_img.ptr, 0, offset)
             m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
         else:
-            final_path_img.data[:] = bytes([0])*len(final_path_img.data)
             for idx, path in enumerate(path_list):
                 #m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, offset)
                 x = path % maze.width

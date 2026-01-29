@@ -1,7 +1,7 @@
 from copy import copy
 from datetime import datetime
 from random import randint
-from typing import Tuple, Any, List
+from typing import Tuple, Any, List, Optional
 from mlx import Mlx
 from algorithms import PathFinder, MazeGenerator
 from objects import Image, Window, Brick, Maze
@@ -48,6 +48,7 @@ class MazeVisualizer:
         self.player = True
         self.path_finding: bool = False
         self.game_mode = False
+        self.game_start_time: Optional[datetime] = None
         self.slider_x = 1
         self.theme_idx = 1
         self.path_finder = path_finder
@@ -283,11 +284,14 @@ class MazeVisualizer:
         }
 
     def draw_game(self) -> None:
-        self.m.mlx_put_image_to_window(
-            self.mlx, self.win.ptr,
-            self.background_img_with_transparency.ptr, 0, 0)
+        #self.m.mlx_put_image_to_window(
+        #    self.mlx, self.win.ptr,
+        #    self.background_img_with_transparency.ptr, 0, 0)
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.img.ptr, 0, self.offset)
+        self.final_path_img.data[:] = bytes([0])*len(self.final_path_img.data)
+        if self.game_start_time != None:
+            self.m.mlx_string_put(self.mlx, self.win.ptr, self.win.width // 8 * 7 - 100, self.win.height - 30, 0xffffffff, str((datetime.now()-self.game_start_time).total_seconds()))
         self.show_menu()
         self.draw.draw_path(
             self.m, self.mlx, self.maze, self.img,
@@ -592,6 +596,8 @@ class MazeVisualizer:
         if self.is_key('left-arrow', keycode):
             if self.game_mode:
                 self.game_path = self.game_player.move(Arrow.LEFT)
+                if self.game_start_time is None:
+                    self.game_start_time = datetime.now()
             elif self.maze.width > 4:
                 self.m.mlx_put_image_to_window(
                     self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
@@ -602,6 +608,8 @@ class MazeVisualizer:
         if self.is_key('up-arrow', keycode):
             if self.game_mode:
                 self.game_path = self.game_player.move(Arrow.UP)
+                if self.game_start_time == None:
+                    self.game_start_time = datetime.now()
             elif self.maze.height > 4:
                 self.m.mlx_put_image_to_window(
                     self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
@@ -611,6 +619,8 @@ class MazeVisualizer:
         if self.is_key('right-arrow', keycode):
             if self.game_mode:
                 self.game_path = self.game_player.move(Arrow.RIGHT)
+                if self.game_start_time == None:
+                    self.game_start_time = datetime.now()
             else:
                 self.m.mlx_put_image_to_window(
                     self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
@@ -621,6 +631,8 @@ class MazeVisualizer:
         if self.is_key('down-arrow', keycode):
             if self.game_mode:
                 self.game_path = self.game_player.move(Arrow.DOWN)
+                if self.game_start_time == None:
+                    self.game_start_time = datetime.now()
             else:
                 self.m.mlx_put_image_to_window(
                     self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
