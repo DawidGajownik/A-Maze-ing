@@ -2,7 +2,7 @@ from MAZE import MazeManager
 from random import randint
 
 from algorithms import MazeGenerator, PathFinder
-from utils.MazeVisualizer import MazeVisualizer
+from utils import MazeVisualizer
 
 def main() -> None:
     config = {}

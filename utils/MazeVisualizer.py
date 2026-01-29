@@ -2,9 +2,8 @@ from copy import copy
 from datetime import datetime
 from random import randint
 from typing import Tuple, Any
-
-from algorithms import PathFinder, MazeGenerator
 from mlx import Mlx
+from algorithms import PathFinder, MazeGenerator
 from objects import Image, Window, Brick
 from MAZE import MazeManager
 from colors import colors

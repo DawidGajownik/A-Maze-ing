@@ -1,10 +1,9 @@
 from typing import Any, Union
-
-from objects import Image, Window, Brick
+from random import randint
 from mlx import Mlx
+from objects import Image, Window, Brick
 from enums import Direction
 from MAZE import MazeManager
-from random import randint
 
 
 def _put_block(
