@@ -1,18 +1,18 @@
-from typing import Dict, List, Deque, Set, Generator, Union
+from typing import Dict, List, Deque, Set, Generator
 from enums import Direction
 from collections import deque
-from MAZE import  MazeManager
+from objects import Maze
 from typing import Any, Optional
 
 class PathFinder:
-    def prepare_data(self, manager: MazeManager) -> None:
+    def prepare_data(self, manager: Maze) -> None:
         self.entry: int = manager.entry
         self.exit: int = manager.exit
         self.height: int = manager.height
         self.width: int = manager.width
         self.maze: list[Any] = manager.map
 
-    def find_path_instant(self, manager: MazeManager) -> str:
+    def find_path_instant(self, manager: Maze) -> str:
         self.prepare_data(manager)
 
         maze_connections: Dict[int, int] = {}
@@ -43,7 +43,7 @@ class PathFinder:
 
         return self.get_str_path(path)
 
-    def find_path(self, manager: MazeManager) -> Generator[int | list[int], None, str]:
+    def find_path(self, manager: Maze) -> Generator[int | list[int], None, str]:
         self.prepare_data(manager)
 
         maze_connections: Dict[int, int] = {}

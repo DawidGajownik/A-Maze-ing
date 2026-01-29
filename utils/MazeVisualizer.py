@@ -4,8 +4,7 @@ from random import randint
 from typing import Tuple, Any
 from mlx import Mlx
 from algorithms import PathFinder, MazeGenerator
-from objects import Image, Window, Brick
-from MAZE import MazeManager
+from objects import Image, Window, Brick, Maze
 from colors import colors
 from .Draw import Draw
 
@@ -26,7 +25,7 @@ def transparent(color: bytes, level: int) -> bytes:
 class MazeVisualizer:
 
     def __init__(
-            self, maze: MazeManager, path_finder: PathFinder):
+            self, maze: Maze, path_finder: PathFinder):
         self.start_time = datetime.now()
         self.m = Mlx()
         self.mlx = self.m.mlx_init()
@@ -360,7 +359,7 @@ class MazeVisualizer:
                                 background * space_size
                             ) * 8 +  # offset x
                             (background * (l_size - 8 * (
-                                    space_size * 2 + wid)))  # fill to full line
+                                    space_size * 2 + wid)))  # fill to fullline
                         )
                         +
                         (
