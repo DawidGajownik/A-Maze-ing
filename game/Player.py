@@ -16,6 +16,8 @@ class Player:
 
         if direction is not None and self._is_valid_move(direction):
             self._get_next_cell(direction)
+            if self.current_position in self.path:
+                self.remove_loop()
             self.path.append(self.current_position)
 
         return self.path
@@ -40,7 +42,7 @@ class Player:
 
         return not (val & (1 << direction.value))
 
-    def _get_next_cell(self, direction: Direction) -> int:
+    def _get_next_cell(self, direction: Direction) -> None:
         if direction == Direction.NORTH:
             self.current_position -= self.width
         if direction == Direction.SOUTH:
@@ -49,3 +51,7 @@ class Player:
             self.current_position += 1
         if direction == Direction.WEST:
             self.current_position -= 1
+
+    def remove_loop(self) -> None:
+        while len(self.path) != 0 and self.path[-1] != self.current_position:
+            self.path.pop()
