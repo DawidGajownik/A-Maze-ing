@@ -40,6 +40,7 @@ def main() -> None:
         finder = PathFinder()
         maze_map_hex = generator.create_maze_instant(manager, seed)
         path_str = finder.find_path_instant(manager)
+        path_str = finder.get_str_path(path_str)
 
         with open(output, "w") as file:
             file.write(maze_map_hex)

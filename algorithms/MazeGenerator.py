@@ -17,7 +17,7 @@ class MazeGenerator:
         self.seed = seed
         self.is_perfect = is_perfect
         self.visualisation_tempo = 1
-        self.heart = True
+        self.heart = False
 
         if self.heart:
             self.create_heart()

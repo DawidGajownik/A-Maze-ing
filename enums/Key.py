@@ -3,6 +3,8 @@ from enum import IntEnum
 
 class Key(IntEnum):
     K_B = 98
+    K_D = 100
+    K_G = 103
     K_L = 108
     K_J = 106
     K_I = 105
@@ -24,7 +26,7 @@ class Numpad(IntEnum):
 
 
 class Arrow(IntEnum):
-    LEFT = 65461
+    LEFT = 65361
     UP = 65362
     RIGHT = 65363
     DOWN = 65364

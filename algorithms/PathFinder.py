@@ -41,7 +41,7 @@ class PathFinder:
         path.append(self.entry)
         path.reverse()
 
-        return self.get_str_path(path)
+        return path
 
     def find_path(self, manager: Maze) -> Generator[int | list[int], None, str]:
         self.prepare_data(manager)
