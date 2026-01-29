@@ -1,6 +1,6 @@
 from objects import Maze
 from enums import Arrow, Direction
-from typing import List
+from typing import List, Union
 
 
 class Player:
@@ -8,6 +8,7 @@ class Player:
         self.current_position = maze.entry
         self.taret_position = maze.exit
         self.maze_map = maze.map
+        self.width = maze.width
         self.path: List[int] = [maze.entry]
 
     def move(self, key_pressed: Arrow) -> List[int]:
@@ -19,8 +20,8 @@ class Player:
         return self.path
 
     @staticmethod
-    def _get_direction(key_pressed: Arrow):
-        direction: Direction = None
+    def _get_direction(key_pressed: Arrow) -> Direction:
+        direction: Union[Direction, None] = None
 
         if key_pressed == Arrow.UP:
             direction = Direction.NORTH
@@ -34,7 +35,7 @@ class Player:
         return direction
 
     def _is_valid_move(self, direction: Direction) -> bool:
-        val = self.maze[self.current_position]
+        val = self.maze_map[self.current_position]
 
         return not (val & (1 << direction.value))
 
