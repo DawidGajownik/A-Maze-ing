@@ -2,6 +2,13 @@ from objects import Maze
 from random import randint
 from algorithms import MazeGenerator, PathFinder
 from utils import MazeVisualizer
+from typing import Dict
+
+
+def is_true_false(key: str, config: Dict[str, str]) -> None:
+    if not (config[key].lower() == "true"
+            or config[key].lower() == "false"):
+        raise ValueError(f"{key}: Diffrent from 'True' or 'False'.")
 
 
 def main() -> None:
@@ -29,17 +36,20 @@ def main() -> None:
             print("Invalid (start, end) coordinates.")
             return
         output = config["OUTPUT_FILE"]
+
+        is_true_false('PERFECT', config)
         perfect = config["PERFECT"].lower() == "true"
-        manager = Maze(width, height, entry, exit, perfect)
-        seed = int(config['SEED']) if 'SEED' in list(config.keys()) else randint(1, 9999)
-        #to zmienilem
-        #maze_map_hex = manager.generator.create_maze_instant(manager, seed)
-        #path_str = manager.finder.find_path_instant(manager)
-        #na to
+
+        is_true_false('HEART', config)
+        heart = config['HEART'].lower() == "true"
+
+        maze = Maze(width, height, entry, exit, perfect, heart)
+        seed = (int(config['SEED']) if 'SEED' in list(config.keys())
+                else randint(1, 9999))
         generator = MazeGenerator()
         finder = PathFinder()
-        maze_map_hex = generator.create_maze_instant(manager, seed)
-        path_str = finder.find_path_instant(manager)
+        maze_map_hex = generator.create_maze_instant(maze, seed)
+        path_str = finder.find_path_instant(maze)
         path_str = finder.get_str_path(path_str)
 
         with open(output, "w") as file:
@@ -48,11 +58,8 @@ def main() -> None:
             file.write(f"{exit[0]},{exit[1]}\n")
             file.write(f"{path_str}\n")
 
-        #te dwie linie wstawilem z managera
-        visualizer = MazeVisualizer(manager, finder)
+        visualizer = MazeVisualizer(maze, finder)
         visualizer.open_window(generator, seed)
-        #ta wyjebalem
-        #manager.draw(seed)
 
     except KeyError as e:
         print(f"Brakuje klucza w configu: {e}")
