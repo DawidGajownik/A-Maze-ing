@@ -1,8 +1,9 @@
-from typing import Dict, List, Deque, Set, Generator, Union
+from typing import Dict, List, Deque, Set, Generator
 from enums import Direction
 from collections import deque
-from MAZE import  MazeManager
+from MAZE import MazeManager
 from typing import Any, Optional
+
 
 class PathFinder:
     def prepare_data(self, manager: MazeManager) -> None:
