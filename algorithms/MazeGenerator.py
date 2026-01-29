@@ -1,7 +1,7 @@
 from random import Random
-from typing import List, Union, Set, Generator
+from typing import List, Union, Set, Generator, Optional
 from enums import Direction
-
+from MAZE import MazeManager
 
 class MazeGenerator:
     def prepare_data(self, seed: int, width: int, height: int,
@@ -16,7 +16,7 @@ class MazeGenerator:
         self.seed = seed
         self.is_perfect = is_perfect
         self.visualisation_tempo = 1
-        self.heart = True
+        self.heart = False
 
         if self.heart:
             self.create_heart()
@@ -76,7 +76,7 @@ class MazeGenerator:
             if cell == 0xF or cell == 1:
                 self.available_cells.remove(i)
 
-    def create_maze_instant(self, manager, seed: int,) -> str:
+    def create_maze_instant(self, manager: MazeManager, seed: int) -> str:
         self.prepare_data(seed, manager.width, manager.height,
                           manager.is_perfect)
 
@@ -115,10 +115,8 @@ class MazeGenerator:
         manager.map = self.maze
         return self.get_maze_str()
 
-    def create_maze(self, manager, seed: int,
-                    visualize: bool = False) -> Generator[Set[int],
-                                                          None,
-                                                          None]:
+    def create_maze(self, manager: MazeManager, seed: int,
+                    visualize: bool = False) -> Generator[tuple[set[int], list[int]], None, None]:
         self.prepare_data(seed, manager.width, manager.height,
                           manager.is_perfect)
 
@@ -148,7 +146,7 @@ class MazeGenerator:
 
                 i += 1
                 if visualize and i % self.visualisation_tempo == 0:
-                    yield (self.found, path)
+                    yield self.found, path
 
             self.save_new_path(path)
             path.clear()
@@ -157,7 +155,7 @@ class MazeGenerator:
             self.create_loops()
 
         manager.map = self.maze
-        yield (self.found, path)
+        yield self.found, path
 
     def create_loops(self) -> None:
         end_blocks: Set[int] = {0b0111, 0b1011, 0b1101, 0b1110}
@@ -200,7 +198,7 @@ class MazeGenerator:
     def create_directions(self, path: List[int]) -> List[Direction]:
         directions: List[Direction] = []
 
-        previous: int = None
+        previous: Optional[int] = None
         for cell in path:
             if previous is None:
                 previous = cell

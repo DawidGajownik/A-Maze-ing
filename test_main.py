@@ -1,6 +1,8 @@
 from MAZE import MazeManager
 from random import randint
 
+from algorithms import MazeGenerator, PathFinder
+from utils.MazeVisualizer import MazeVisualizer
 
 def main() -> None:
     config = {}
@@ -30,8 +32,14 @@ def main() -> None:
         perfect = config["PERFECT"].lower() == "true"
         manager = MazeManager(width, height, entry, exit, perfect)
         seed = int(config['SEED']) if 'SEED' in list(config.keys()) else randint(1, 9999)
-        maze_map_hex = manager.generator.create_maze_instant(manager, seed)
-        path_str = manager.finder.find_path_instant(manager)
+        #to zmienilem
+        #maze_map_hex = manager.generator.create_maze_instant(manager, seed)
+        #path_str = manager.finder.find_path_instant(manager)
+        #na to
+        generator = MazeGenerator()
+        finder = PathFinder()
+        maze_map_hex = generator.create_maze_instant(manager, seed)
+        path_str = finder.find_path_instant(manager)
 
         with open(output, "w") as file:
             file.write(maze_map_hex)
@@ -39,7 +47,11 @@ def main() -> None:
             file.write(f"{exit[0]},{exit[1]}\n")
             file.write(f"{path_str}\n")
 
-        manager.draw(seed)
+        #te dwie linie wstawilem z managera
+        visualizer = MazeVisualizer(manager, finder)
+        visualizer.open_window(generator, seed)
+        #ta wyjebalem
+        #manager.draw(seed)
 
     except KeyError as e:
         print(f"Brakuje klucza w configu: {e}")

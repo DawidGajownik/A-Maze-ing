@@ -1,11 +1,15 @@
-from objects import Image, Maze, Window, Brick
+from typing import Any, Union
+
+from objects import Image, Window, Brick
 from mlx import Mlx
-from enums import Axle, Sign, Direction
-from typing import Optional
+from enums import Direction
+from MAZE import MazeManager
 from random import randint
 
 
-def _put_block(i: int, j: int, img, color:bytes, thickness: int) -> None:
+def _put_block(
+        i: int, j: int, img: Image,
+        color: bytes, thickness: int) -> None:
 
     start_x = i * img.scale + thickness
     start_y = j * img.scale + thickness
@@ -19,7 +23,7 @@ def _put_block(i: int, j: int, img, color:bytes, thickness: int) -> None:
 
 
 def _put_brick(
-        i: int, j: int, img, thickness: int,
+        i: int, j: int, img: Image, thickness: int,
         brick: Brick) -> None:
     start_x = i * img.scale + thickness
     start_y = j * img.scale + thickness
@@ -65,7 +69,7 @@ def _put_up(color: bytes, i: int, j: int, img: Image, wall_range: tuple,
 
 
 def _put_down(color: bytes,
-              i: int, j: int, img: Image, maze: Maze, w_range: tuple,
+              i: int, j: int, img: Image, maze: MazeManager, w_range: tuple,
               thickness: int
               ) -> None:
 
@@ -125,7 +129,7 @@ def _put_left(color: bytes, i: int, j: int, img: Image, w_range: tuple,
 
 
 def _put_right(color: bytes,
-               i: int, j: int, img: Image, maze: Maze, w_range: tuple,
+               i: int, j: int, img: Image, w_range: tuple,
                thickness: int
                ) -> None:
     start_y = j * img.scale + thickness - 1
@@ -151,13 +155,13 @@ def _put_right(color: bytes,
 
 
 def _put_road_block(
-        i: int, j: int, img, color:bytes, thickness: int, lista: list, idx: int, width: int
+        i: int, j: int, img: Image, color: bytes, thickness: int, path: list, idx: int, width: int
         ) -> None:
 
-    x_m = thickness if idx == 0 or lista[idx - 1] - lista[idx] != -1 else 0
-    x_p = thickness if lista[idx - 1] - lista[idx] == 1 else 0
-    y_m = thickness if lista[idx - 1] - lista[idx] != -width else 0
-    y_p = thickness if lista[idx - 1] - lista[idx] == width else 0
+    x_m = thickness if idx == 0 or path[idx - 1] - path[idx] != -1 else 0
+    x_p = thickness if path[idx - 1] - path[idx] == 1 else 0
+    y_m = thickness if path[idx - 1] - path[idx] != -width else 0
+    y_p = thickness if path[idx - 1] - path[idx] == width else 0
 
     start_x = i * img.scale + img.thickness + x_m*2 - 2
     start_y = j * img.scale + img.thickness + y_m*2 - 2
@@ -174,11 +178,11 @@ def _put_road_block(
 class Draw():
 
     def draw_path(
-            cls, m: Mlx, mlx: any, maze, img: Image, path_img: Image, final_path_img:Image, win: Window, list, colors:dict, lines: dict, offset: int
-    ):
-        if isinstance(list, int):
-            x = list % maze.width
-            y = list // maze.width
+            cls, m: Mlx, mlx: Any, maze: MazeManager, img: Image, path_img: Image, final_path_img:Image, win: Window, path_list: Union[int, list[int]], colors: dict, offset: int
+    ) -> None:
+        if isinstance(path_list, int):
+            x = path_list % maze.width
+            y = path_list // maze.width
             _put_block(x, y, path_img, colors['Snake'][:3] + bytes([30]), 0)
             m.mlx_put_image_to_window(mlx, win.ptr, path_img.ptr, 0, offset)
             m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
@@ -186,20 +190,20 @@ class Draw():
 
         else:
 
-            for idx, path in enumerate(list):
+            for idx, path in enumerate(path_list):
                 m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, offset)
                 x = path % maze.width
                 y = path // maze.width
-                _put_road_block(x, y, final_path_img, colors['Snake'][:3] + bytes([255]), img.thickness, list, idx, maze.width)
+                _put_road_block(x, y, final_path_img, colors['Snake'][:3] + bytes([255]), img.thickness, path_list, idx, maze.width)
                 m.mlx_put_image_to_window(mlx, win.ptr, final_path_img.ptr, 0, offset)
                 m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
 
 
 
     def draw_maze(
-            cls, m: Mlx, mlx: any, maze, img: Image, win: Window, found, colors: dict,
+            cls, m: Mlx, mlx: Any, maze: MazeManager, img: Image, win: Window, found: set[int], colors: dict,
             brick_visible: bool,
-            brick: Brick, lines: dict, offset: int
+            brick: Brick, offset: int
             ) -> None:
         
         img.data[:] = colors['Grid 2'] * (len(img.data)//4)
@@ -221,9 +225,9 @@ class Draw():
                         _put_block(x, y, img, colors['Snake'], 0)
                         if maze.map[y * maze.width + x - 1] != 16:
                             _put_left(colors['Grid 1'], x, y, img, wall_range, img.thickness)
-                            _put_right(colors['Grid 1'], x-1, y, img, maze, wall_range, img.thickness)
+                            _put_right(colors['Grid 1'], x-1, y, img, wall_range, img.thickness)
                         if x == maze.width - 1 or maze.map[y * maze.width + x + 1] != 16:
-                            _put_right(colors['Grid 1'], x, y, img, maze, wall_range, img.thickness)
+                            _put_right(colors['Grid 1'], x, y, img, wall_range, img.thickness)
                             _put_left(colors['Grid 1'], x+1, y, img, wall_range, img.thickness)
                         if maze.map[(y-1) * maze.width + x] != 16:
                             _put_up(colors['Grid 1'], x, y, img, wall_range, img.thickness)
@@ -238,7 +242,7 @@ class Draw():
                         if maze.map[(y - 1) * maze.width + x] == 16:
                             if maze.map[(y-1) * maze.width + x - 1] != 16:
                                 _put_left(colors['Grid 1'], x, y - 1, img, wall_range, img.thickness)
-                                _put_right(colors['Grid 1'], x - 1, y - 1, img, maze, wall_range, img.thickness)
+                                _put_right(colors['Grid 1'], x - 1, y - 1, img, wall_range, img.thickness)
                     if maze.map[y * maze.width + x] & (1 << Direction.SOUTH.value):
                         _put_down(colors['Grid 1'], x, y, img, maze, wall_range, img.thickness)
                         _put_up(colors['Grid 1'], x, y + 1, img, wall_range, img.thickness)
@@ -249,15 +253,15 @@ class Draw():
                         _put_down(colors['Grid 1'], x, y-1, img, maze, wall_range, img.thickness)
                     if maze.map[y * maze.width + x] & (1 << Direction.WEST.value):
                         _put_left(colors['Grid 1'], x, y, img, wall_range, img.thickness)
-                        _put_right(colors['Grid 1'], x-1, y, img, maze, wall_range, img.thickness)
+                        _put_right(colors['Grid 1'], x-1, y, img, wall_range, img.thickness)
                     if maze.map[y * maze.width + x] & (1 << Direction.EAST.value):
-                        _put_right(colors['Grid 1'], x, y, img, maze, wall_range, img.thickness)
+                        _put_right(colors['Grid 1'], x, y, img, wall_range, img.thickness)
                         _put_left(colors['Grid 1'], x+1, y, img, wall_range, img.thickness)
                     if maze.map[y * maze.width + x - 1] & (1 << Direction.NORTH.value):
                         _put_up(colors['Grid 1'], x - 1, y, img, wall_range, img.thickness)
                         _put_down(colors['Grid 1'], x - 1, y-1, img, maze, wall_range, img.thickness)
                     if maze.map[(y - 1)* maze.width + x] & (1 << Direction.WEST.value):
                         _put_left(colors['Grid 1'], x, y - 1, img, wall_range, img.thickness)
-                        _put_right(colors['Grid 1'], x - 1, y - 1, img, maze, wall_range, img.thickness)
+                        _put_right(colors['Grid 1'], x - 1, y - 1, img, wall_range, img.thickness)
         m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, offset)
         m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)

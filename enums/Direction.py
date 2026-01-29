@@ -8,11 +8,13 @@ class Direction(int, Enum):
     WEST = 3
 
     @property
-    def opposite(self):
-        mapping = {
-            Direction.NORTH: Direction.SOUTH,
-            Direction.SOUTH: Direction.NORTH,
-            Direction.EAST: Direction.WEST,
-            Direction.WEST: Direction.EAST
-        }
-        return mapping[self]
+    def opposite(self) -> "Direction":
+        match self:
+            case Direction.NORTH:
+                return Direction.SOUTH
+            case Direction.SOUTH:
+                return Direction.NORTH
+            case Direction.EAST:
+                return Direction.WEST
+            case Direction.WEST:
+                return Direction.EAST
