@@ -15,7 +15,8 @@ class Player:
         direction = self._get_direction(key_pressed)
 
         if direction is not None and self._is_valid_move(direction):
-            self.path.append(self._get_next_cell(direction))
+            self._get_next_cell(direction)
+            self.path.append(self.current_position)
 
         return self.path
 
@@ -41,10 +42,10 @@ class Player:
 
     def _get_next_cell(self, direction: Direction) -> int:
         if direction == Direction.NORTH:
-            return self.current_position - self.width
+            self.current_position -= self.width
         if direction == Direction.SOUTH:
-            return self.current_position + self.width
+            self.current_position += self.width
         if direction == Direction.EAST:
-            return self.current_position + 1
+            self.current_position += 1
         if direction == Direction.WEST:
-            return self.current_position - 1
+            self.current_position -= 1

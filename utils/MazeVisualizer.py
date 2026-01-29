@@ -1,12 +1,14 @@
 from copy import copy
 from datetime import datetime
 from random import randint
-from typing import Tuple, Any
+from typing import Tuple, Any, List
 from mlx import Mlx
 from algorithms import PathFinder, MazeGenerator
 from objects import Image, Window, Brick, Maze
 from colors import colors
 from .Draw import Draw
+from game.Player import Player
+from enums import Key, Arrow, Numpad
 
 
 def darken(color: bytes, factor: float) -> bytes:
@@ -33,6 +35,8 @@ class MazeVisualizer:
         self.draw = Draw()
         self.exit = exit
         self.maze = maze
+        self.game_player = Player(self.maze)
+        self.game_path: List[int] = self.game_player.path
         self.x = -1
         self.y = -2
         self.transparency = 1
@@ -43,6 +47,7 @@ class MazeVisualizer:
         self.frozen = False
         self.player = True
         self.path_finding: bool = False
+        self.game_mode = False
         self.slider_x = 1
         self.theme_idx = 1
         self.path_finder = path_finder
@@ -179,6 +184,7 @@ class MazeVisualizer:
             'd': 100,
             'a': 97,
             'n': 110,
+            'g': 103,
             'numpad-plus': 65451,
             'numpad-minus': 65453,
             'left-arrow': 65361,
@@ -276,8 +282,22 @@ class MazeVisualizer:
                 }
         }
 
+    def draw_game(self) -> None:
+        self.m.mlx_put_image_to_window(
+            self.mlx, self.win.ptr,
+            self.background_img_with_transparency.ptr, 0, 0)
+        self.m.mlx_put_image_to_window(
+            self.mlx, self.win.ptr, self.img.ptr, 0, self.offset)
+        self.show_menu()
+        self.draw.draw_path(
+            self.m, self.mlx, self.maze, self.img,
+            self.path_img, self.final_path_img, self.win,
+            self.game_path, self.colors, self.offset)
+
     def draw_maze(self, vars: dict) -> None:
         if not self.maze_draw or self.frozen:
+            if self.game_mode:
+                self.draw_game()
             if self.path_finding:
                 self.draw_path()
             return
@@ -310,7 +330,8 @@ class MazeVisualizer:
 
         except StopIteration:
             if not self.path_finding:
-                self.path_finding = True
+                if not self.game_mode:
+                    self.path_finding = True
                 self.maze_draw = False
 
     def draw_path(self) -> None:
@@ -503,6 +524,9 @@ class MazeVisualizer:
         win: Window = vars['win']
         mlx = vars['mlx']
 
+        if self.is_key('g', keycode):
+            self.game_mode = not self.game_mode
+
         if self.is_key('esc', keycode):
             m.mlx_destroy_window(mlx, win.ptr)
             m.mlx_loop_exit(mlx)
@@ -565,32 +589,43 @@ class MazeVisualizer:
             if (self.img.thickness > 1):
                 self.img.thickness -= 1
 
-        if self.is_key('left-arrow', keycode) and self.maze.width > 4:
-            self.m.mlx_put_image_to_window(
-                self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+        if self.is_key('left-arrow', keycode):
+            if self.game_mode:
+                self.game_path = self.game_player.move(Arrow.LEFT)
+            elif self.maze.width > 4:
+                self.m.mlx_put_image_to_window(
+                    self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
 
-            self.maze.width -= 1
-            self.generate_new_maze(True)
+                self.maze.width -= 1
+                self.generate_new_maze(True)
 
-        if self.is_key('up-arrow', keycode) and self.maze.height > 4:
-            self.m.mlx_put_image_to_window(
-                self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
-
-            self.maze.height -= 1
-            self.generate_new_maze(True)
+        if self.is_key('up-arrow', keycode):
+            if self.game_mode:
+                self.game_path = self.game_player.move(Arrow.UP)
+            elif self.maze.height > 4:
+                self.m.mlx_put_image_to_window(
+                    self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+                self.maze.height -= 1
+                self.generate_new_maze(True)
 
         if self.is_key('right-arrow', keycode):
-            self.m.mlx_put_image_to_window(
-                self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+            if self.game_mode:
+                self.game_path = self.game_player.move(Arrow.RIGHT)
+            else:
+                self.m.mlx_put_image_to_window(
+                    self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
 
-            self.maze.width += 1
-            self.generate_new_maze(True)
+                self.maze.width += 1
+                self.generate_new_maze(True)
 
         if self.is_key('down-arrow', keycode):
-            self.m.mlx_put_image_to_window(
-                self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
-            self.maze.height += 1
-            self.generate_new_maze(True)
+            if self.game_mode:
+                self.game_path = self.game_player.move(Arrow.DOWN)
+            else:
+                self.m.mlx_put_image_to_window(
+                    self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+                self.maze.height += 1
+                self.generate_new_maze(True)
 
         self.brick.size = self.img.scale
         self.brick.texture_create()
