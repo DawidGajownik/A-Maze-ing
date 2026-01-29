@@ -1,10 +1,10 @@
-from MAZE import MazeManager
+from objects import Maze
 from enums import Arrow, Direction
 from typing import List
 
 
 class Player:
-    def __init__(self, maze: MazeManager) -> None:
+    def __init__(self, maze: Maze) -> None:
         self.current_position = maze.entry
         self.taret_position = maze.exit
         self.maze_map = maze.map
