@@ -1,8 +1,8 @@
-from MAZE import MazeManager
+from objects import Maze
 from random import randint
-
 from algorithms import MazeGenerator, PathFinder
 from utils import MazeVisualizer
+
 
 def main() -> None:
     config = {}
@@ -30,7 +30,7 @@ def main() -> None:
             return
         output = config["OUTPUT_FILE"]
         perfect = config["PERFECT"].lower() == "true"
-        manager = MazeManager(width, height, entry, exit, perfect)
+        manager = Maze(width, height, entry, exit, perfect)
         seed = int(config['SEED']) if 'SEED' in list(config.keys()) else randint(1, 9999)
         #to zmienilem
         #maze_map_hex = manager.generator.create_maze_instant(manager, seed)

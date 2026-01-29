@@ -1,11 +1,11 @@
 from mlx import Mlx
 from .Window import Window
-from MAZE import MazeManager
+from .Maze import Maze
 from typing import Any
 
 
 class Image():
-    def __init__(self, mlx: Mlx, mlx_ptr: Any, win: Window, maze: MazeManager,
+    def __init__(self, mlx: Mlx, mlx_ptr: Any, win: Window, maze: Maze,
                  width: int | None = None,
                  height: int | None = None
                  ):
@@ -24,7 +24,7 @@ class Image():
         self.prev_thickness = None
         self.prev_scale = None
 
-    def set_scale(self, maze: MazeManager) -> None:
+    def set_scale(self, maze: Maze) -> None:
         self.scale = min(
             self.width // maze.width,
             self.height // maze.height

@@ -1,7 +1,8 @@
 from random import Random
 from typing import List, Union, Set, Generator, Optional
 from enums import Direction
-from MAZE import MazeManager
+from objects import Maze
+
 
 class MazeGenerator:
     def prepare_data(self, seed: int, width: int, height: int,
@@ -16,7 +17,7 @@ class MazeGenerator:
         self.seed = seed
         self.is_perfect = is_perfect
         self.visualisation_tempo = 1
-        self.heart = False
+        self.heart = True
 
         if self.heart:
             self.create_heart()
@@ -76,7 +77,7 @@ class MazeGenerator:
             if cell == 0xF or cell == 1:
                 self.available_cells.remove(i)
 
-    def create_maze_instant(self, manager: MazeManager, seed: int) -> str:
+    def create_maze_instant(self, manager: Maze, seed: int) -> str:
         self.prepare_data(seed, manager.width, manager.height,
                           manager.is_perfect)
 
@@ -115,7 +116,7 @@ class MazeGenerator:
         manager.map = self.maze
         return self.get_maze_str()
 
-    def create_maze(self, manager: MazeManager, seed: int,
+    def create_maze(self, manager: Maze, seed: int,
                     visualize: bool = False) -> Generator[tuple[set[int], list[int]], None, None]:
         self.prepare_data(seed, manager.width, manager.height,
                           manager.is_perfect)

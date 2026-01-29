@@ -6,7 +6,7 @@ class Window:
 
     def __init__(self, mlx: Mlx, mlx_ptr: Any, desc: str):
         screen_size: Tuple[Any, int, int] = mlx.mlx_get_screen_size(mlx_ptr)
-        self.val, self.width, self.height = screen_size
+        *_, self.width, self.height = screen_size
         self.height -= 100
         self.width -= 100
         self.desc = desc
