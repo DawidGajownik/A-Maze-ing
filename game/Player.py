@@ -18,7 +18,8 @@ class Player:
             self._get_next_cell(direction)
             if self.current_position in self.path:
                 self.remove_loop()
-            self.path.append(self.current_position)
+            else:
+                self.path.append(self.current_position)
 
         return self.path
 

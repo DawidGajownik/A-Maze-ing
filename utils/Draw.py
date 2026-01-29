@@ -222,6 +222,14 @@ def _is_found(x: int, y: int, maze: Maze, found: set[int]) -> bool:
     return (y * maze.width + x) in found
 
 
+def _is_start(x: int, y: int, maze: Maze) -> bool:
+    return (y * maze.width + x) == maze.entry
+
+
+def _is_finish(x: int, y: int, maze: Maze) -> bool:
+    return (y * maze.width + x) == maze.exit
+
+
 def _is_forty_two(x: int, y: int, maze: Maze) -> bool:
     return maze.map[y * maze.width + x] == 15
 
@@ -261,6 +269,18 @@ def _paint_forty_two(
     _put_down(colors['Grid 1'], x, y-1, img, maze, wall_range, img.thickness)
     _put_up(colors['Grid 1'], x, y+1, img, wall_range, img.thickness)
     _put_left(colors['Grid 1'], x+1, y, img, wall_range, img.thickness)
+
+
+def _paint_start(
+        img: Image, maze: Maze, colors: dict,
+        wall_range: int, x: int, y: int) -> None:
+    _put_block(x, y, img, bytes([255, 0, 0, 255]), img.thickness)
+
+
+def _paint_finish(
+        img: Image, maze: Maze, colors: dict,
+        wall_range: int, x: int, y: int) -> None:
+    _put_block(x, y, img, bytes([0, 0, 255, 255]), img.thickness)
 
 
 def _paint_south_wall(
@@ -323,16 +343,17 @@ class Draw():
             m.mlx_put_image_to_window(mlx, win.ptr, path_img.ptr, 0, offset)
             m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
         else:
+            final_path_img.data[:] = bytes([0])*len(final_path_img.data)
             for idx, path in enumerate(path_list):
-                m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, offset)
+                #m.mlx_put_image_to_window(mlx, win.ptr, img.ptr, 0, offset)
                 x = path % maze.width
                 y = path // maze.width
                 _put_road_block(
                     x, y, final_path_img, colors['Snake'][:3] + bytes([255]),
                     img.thickness, path_list, idx, maze.width)
-                m.mlx_put_image_to_window(
-                    mlx, win.ptr, final_path_img.ptr, 0, offset)
-                m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
+            m.mlx_put_image_to_window(
+                mlx, win.ptr, final_path_img.ptr, 0, offset)
+            #m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
 
     def draw_maze(
             cls, m: Mlx, mlx: Any, maze: Maze, img: Image,
@@ -353,6 +374,10 @@ class Draw():
                             _put_block(
                                 x, y, img, colors['Block found'],
                                 img.thickness)
+                    if _is_start(x, y, maze):
+                        _paint_start(img, maze, colors, wall_range, x, y)
+                    if _is_finish(x, y, maze):
+                        _paint_finish(img, maze, colors, wall_range, x, y)
                     if _is_forty_two(x, y, maze):
                         _paint_forty_two(img, maze, colors, wall_range, x, y)
                     if _is_snake(x, y, maze):
