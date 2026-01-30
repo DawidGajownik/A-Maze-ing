@@ -5,15 +5,30 @@ from objects import Maze
 
 
 class MazeGenerator:
+    old_width: int = 0
+    old_height: int = 0
+
     def prepare_data(self, seed: int, width: int, height: int,
                      is_perfect: bool, heart: bool,
-                     entry: int, exit: int) -> None:
+                     entry: int, exit: int, maze: Maze) -> None:
         self.maze_random = Random()
         self.maze_random.seed(seed)
         self.maze_map: List[Union[bool, int]] = [False] * (width * height)
         self.available_cells: Set[int] = {x for x in range(width * height)}
+
         self.width = width
         self.height = height
+        if MazeGenerator.old_width == 0 and MazeGenerator.old_height == 0:
+            MazeGenerator.old_width = width
+            MazeGenerator.old_height = height
+
+        elif (MazeGenerator.old_width != self.width
+              or MazeGenerator.old_height != self.height):
+            maze.entry = 0
+            maze.exit = (height - 1) * width + width - 1
+            entry = maze.entry
+            exit = maze.exit
+
         self.found: Set[int] = set()
         self.seed = seed
         self.is_perfect = is_perfect
@@ -90,7 +105,7 @@ class MazeGenerator:
     def create_maze_instant(self, maze: Maze, seed: int) -> str:
         self.prepare_data(seed, maze.width, maze.height,
                           maze.is_perfect, maze.heart,
-                          maze.entry, maze.exit)
+                          maze.entry, maze.exit, maze)
 
         end = self.get_random_cell()
         self.maze_map[end] = 0b1111
@@ -127,12 +142,12 @@ class MazeGenerator:
         maze.map = self.maze_map
         return self.get_maze_str()
 
-    def create_maze(self, manager: Maze, seed: int,
+    def create_maze(self, maze: Maze, seed: int,
                     visualize: Optional[bool] = False) -> Generator[
                         Tuple[set[int], List[int]], None, None]:
-        self.prepare_data(seed, manager.width, manager.height,
-                          manager.is_perfect, manager.heart,
-                          manager.entry, manager.exit)
+        self.prepare_data(seed, maze.width, maze.height,
+                          maze.is_perfect, maze.heart,
+                          maze.entry, maze.exit, maze)
 
         end = self.get_random_cell()
         self.maze_map[end] = 0b1111
@@ -156,7 +171,7 @@ class MazeGenerator:
                     self.clear_last_path(current_pos, path)
                 elif self.maze_map[current_pos] != 16:
                     path_found = True
-                manager.map = self.maze_map
+                maze.map = self.maze_map
 
                 i += 1
                 if visualize and i % self.visualisation_tempo == 0:
@@ -168,7 +183,7 @@ class MazeGenerator:
         if not self.is_perfect:
             self.create_loops()
 
-        manager.map = self.maze_map
+        maze.map = self.maze_map
         yield self.found, path
 
     def create_loops(self) -> None:
