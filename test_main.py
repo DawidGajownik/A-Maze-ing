@@ -3,24 +3,44 @@ from random import randint
 from algorithms import MazeGenerator, PathFinder
 from utils import MazeVisualizer
 from typing import Dict
+from sys import argv
 
 
-def is_true_false(key: str, config: Dict[str, str]) -> None:
+def check_entry_exit_coordinates(entry: int, exit: int,
+                                 width: int, height: int) -> None:
+    if (entry[0] < 0 or entry[0] > width - 1
+        or entry[1] < 0 or entry[1] > height - 1
+        or exit[0] < 0 or exit[0] > width - 1
+        or exit[1] < 0 or exit[1] > height - 1
+            or (entry[0] == exit[0] and entry[1] == exit[1])):
+        raise ValueError("Invalid (start, end) coordinates.")
+
+
+def check_true_false(key: str, config: Dict[str, str]) -> None:
     if not (config[key].lower() == "true"
             or config[key].lower() == "false"):
         raise ValueError(f"{key}: Diffrent from 'True' or 'False'.")
 
 
-def main() -> None:
-    config = {}
-    with open("config.txt") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
+def check_output_file_type(file_name: str) -> None:
+    if file_name[-4:] != ".txt":
+        raise ValueError("Invalid output file type. ('*.txt' required)")
 
-            key, value = line.split("=", 1)
-            config[key.strip()] = value.strip()
+
+def main() -> None:
+    try:
+        config = {}
+        with open(argv[1]) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+
+                key, value = line.split("=", 1)
+                config[key.strip()] = value.strip()
+    except FileNotFoundError:
+        print(f"Invalid file name: '{argv[1]}'")
+        return
 
     try:
         width = int(config["WIDTH"])
@@ -29,23 +49,22 @@ def main() -> None:
         exit = str((config["EXIT"])).split(",")
         entry = int(entry[0]), int(entry[1])
         exit = int(exit[0]), int(exit[1])
-        if (entry[0] < 0 or entry[0] > width - 1
-            or entry[1] < 0 or entry[1] > height - 1
-            or exit[0] < 0 or exit[0] > width - 1
-                or exit[1] < 0 or exit[1] > height - 1):
-            print("Invalid (start, end) coordinates.")
-            return
+
+        check_entry_exit_coordinates(entry, exit, width, height)
+
+        check_output_file_type(config['OUTPUT_FILE'])
         output = config["OUTPUT_FILE"]
 
-        is_true_false('PERFECT', config)
+        check_true_false('PERFECT', config)
         perfect = config["PERFECT"].lower() == "true"
 
-        is_true_false('HEART', config)
+        check_true_false('HEART', config)
         heart = config['HEART'].lower() == "true"
 
         maze = Maze(width, height, entry, exit, perfect, heart)
         seed = (int(config['SEED']) if 'SEED' in list(config.keys())
                 else randint(1, 9999))
+
         generator = MazeGenerator()
         finder = PathFinder()
         maze_map_hex = generator.create_maze_instant(maze, seed)

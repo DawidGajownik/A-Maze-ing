@@ -32,9 +32,9 @@ class MazeGenerator:
 
     def is_entry_exit_valid(self, entry: int, exit: int) -> None:
         if self.maze_map[entry] == 0xF or self.maze_map[entry] == 1:
-            raise ValueError("Invalid entry coordinates.")
+            raise ValueError("Invalid start coordinates.")
         if self.maze_map[exit] == 0xF or self.maze_map[exit] == 1:
-            raise ValueError("Invalid exit coordinates.")
+            raise ValueError("Invalid end coordinates.")
 
     def set_42(self) -> None:
         x = self.width // 2
@@ -131,7 +131,8 @@ class MazeGenerator:
                     visualize: Optional[bool] = False) -> Generator[
                         Tuple[set[int], List[int]], None, None]:
         self.prepare_data(seed, manager.width, manager.height,
-                          manager.is_perfect, manager.heart)
+                          manager.is_perfect, manager.heart,
+                          manager.entry, manager.exit)
 
         end = self.get_random_cell()
         self.maze_map[end] = 0b1111
