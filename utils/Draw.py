@@ -9,8 +9,8 @@ def _put_block(
         i: int, j: int, img: Image,
         color: bytes, thickness: int) -> None:
 
-    start_x = i * img.scale + thickness
-    start_y = j * img.scale + thickness
+    start_x = i * img.scale + thickness//2 + img.thickness
+    start_y = j * img.scale + thickness//2 + img.thickness
     size = img.scale - thickness
 
     row = color * size
@@ -340,7 +340,7 @@ class Draw():
         if isinstance(path_list, int):
             x = path_list % maze.width
             y = path_list // maze.width
-            _put_block(x, y, path_img, colors['Snake'][:3] + bytes([30]), 0)
+            _put_block(x, y, path_img, colors['Snake'][:3] + bytes([10]), 0)
             m.mlx_put_image_to_window(mlx, win.ptr, path_img.ptr, 0, offset)
             #m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
         else:
@@ -365,9 +365,9 @@ class Draw():
             brick_visible: bool,
             brick: Brick, offset: int
             ) -> None:
-        #img.data[:] = colors['Background'] * (len(img.data)//4)
-        img.data[:(img.scale * (maze.height+1) * img.width) * 4] = colors['Grid 2'] * (
-                img.scale * (maze.height+1) * img.width)
+        img.data[:] = colors['Background'] * (len(img.data)//4)
+        #img.data[:(img.scale * (maze.height+1) * img.width) * 4] = colors['Grid 2'] * (
+         #S       img.scale * (maze.height+1) * img.width)
         wall_range = (-img.thickness+1, img.scale + img.thickness)
         for y in range(maze.height):
             for x in range(maze.width):
@@ -378,7 +378,7 @@ class Draw():
                         else:
                             _put_block(
                                 x, y, img, colors['Block found'],
-                                img.thickness)
+                                max(1, img.thickness//2))
                     # if _is_start(x, y, maze):
                     #     _paint_start(img, maze, colors, wall_range, x, y)
                     # if _is_finish(x, y, maze):

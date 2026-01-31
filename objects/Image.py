@@ -23,6 +23,7 @@ class Image():
         self.thickness = 1
         self.prev_thickness = None
         self.prev_scale = None
+        self.data[:] = bytes([0]) * len(self.data)
 
     def set_scale(self, maze: Maze) -> None:
         self.scale = min(

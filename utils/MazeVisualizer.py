@@ -11,7 +11,6 @@ from game.Player import Player
 from enums import Key, Arrow, Numpad
 from pathlib import Path
 
-
 def get_usernames_from_home() -> list[str]:
     return [
         p.name
@@ -144,7 +143,7 @@ class MazeVisualizer:
             = bytes([0, 0, 0, 255]) * (len(self.strings_background.data) // 4)
         self.background_img = Image(
             self.m, self.mlx, self.win, self.maze,
-            self.win.width, self.win.height)
+            self.win.width // 8 * 7, self.win.height)
         self.background_img.data[:]\
             = bytes([0, 0, 0, 255]) * (len(self.background_img.data) // 4)
         self.background_img_with_transparency = Image(
@@ -343,7 +342,7 @@ class MazeVisualizer:
                                               self.transparency)
             if not self.paused:
                 self.found = next(self.generator)
-                self.gen.visualisation_tempo = self.slider_x
+                self.gen.visualisation_tempo = self.slider_x*100
 
             self.m.mlx_put_image_to_window(
                 self.mlx, self.win.ptr,
@@ -351,6 +350,9 @@ class MazeVisualizer:
             self.show_menu()
             if not self.animation:
                 self.create_colors(255)
+                self.m.mlx_put_image_to_window(
+                    self.mlx, self.win.ptr,
+                    self.background_img.ptr, 0, 0)
             self.draw.draw_maze(
                 self.m, self.mlx, self.maze, self.img,
                 self.win, self.found[0], self.colors,
@@ -366,6 +368,7 @@ class MazeVisualizer:
 
     def draw_path(self) -> None:
         try:
+            self.create_colors(255)
             if not self.animation:
                 self.path = self.path_finder.find_path_instant(self.maze)
             else:
@@ -385,6 +388,7 @@ class MazeVisualizer:
                 self.path_img, self.final_path_img, self.win,
                 self.path, self.colors, self.offset, self.animation)
         except StopIteration:
+            return
             self.path_finding = False
             #self.maze_draw = False
 
@@ -473,7 +477,7 @@ class MazeVisualizer:
         self.set_images_and_position()
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.strings_background.ptr,
-            self.win.width // 64 * 56, self.win.height // 64 * 56)
+            self.win.width // 64 * 57, self.win.height // 64 * 56)
         self.set_menu_data()
 
         for name, position in self.menu_data.items():
@@ -543,6 +547,12 @@ class MazeVisualizer:
             if not self.path_finding:
                 self.m.mlx_put_image_to_window(
                     self.mlx, self.win.ptr, self.img.ptr, 0, self.offset)
+            if self.animation:
+                self.path_img = Image(self.m, self.mlx, self.win, self.maze)
+                self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
+                self.final_path_img.data[:] = bytes([0]) * len(self.final_path_img.data)
+                self.finder = self.path_finder.find_path(self.maze)
+
         if self.cursor_over_animation_icon(x, y):
             self.animation = not self.animation
             if not self.path_finding:
@@ -604,8 +614,8 @@ class MazeVisualizer:
             print(intra_name, game_time, "size =", self.maze.width, "x", self.maze.height, "seed =", self.seed)
 
     def new_size_maze(self, x: int, y: int) -> None:
-        self.m.mlx_put_image_to_window(
-            self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+        #self.m.mlx_put_image_to_window(
+            #self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
         self.maze.width += x
         self.maze.height += y
         if self.icon_size is not self.get_icon_size():
@@ -616,6 +626,7 @@ class MazeVisualizer:
             self.finish: Tuple[Any, int, int]\
                 = self.m.mlx_png_file_to_image(
                 self.mlx, f"pictures/finish{self.icon_size}.png")
+
         self.generate_new_maze(False)
 
     def key_hook(self, keycode: int, vars: dict) -> None:
@@ -718,10 +729,8 @@ class MazeVisualizer:
         self.brick.size = self.img.scale
         self.brick.texture_create()
         self.time = datetime.now()
-        if keycode in (Arrow.DOWN, Arrow.LEFT, Arrow.RIGHT, Arrow.UP) and not self.game_mode:
-            self.offset\
-            = (self.img.height - self.maze.height * self.img.scale) // 2
-            self.show_menu()
+        #if keycode in (Arrow.DOWN, Arrow.LEFT, Arrow.RIGHT, Arrow.UP) and not self.game_mode:
+        self.show_menu()
         if keycode not in (Arrow.DOWN, Arrow.LEFT, Arrow.RIGHT, Arrow.UP):
             if not self.animation:
                 self.create_colors(255)
@@ -729,6 +738,14 @@ class MazeVisualizer:
                 self.m, self.mlx, self.maze, self.img,
                 self.win, self.found[0], self.colors,
                 self.brick_visible, self.brick, self.offset)
+            if self.path_finding and not self.animation:
+                self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
+                self.draw_path()
+            if self.path_finding and self.animation and keycode in(Numpad.PLUS, Numpad.MINUS):
+                self.animation = False
+                self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
+                self.draw_path()
+                self.animation = True
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr,
                                            self.start[0], self.enter_x, self.enter_y)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr,
@@ -776,12 +793,20 @@ class MazeVisualizer:
         self.img.thickness = thickness
         self.game_player = Player(self.maze)
         self.game_path: List[int] = []
+        if self.path_finding:
+            self.maze_draw = True
+
+        if not self.path_finding:
+            self.maze_draw = True
+        self.brick = Brick(
+            self.img.scale, self.transparency, darken,
+            self.colors['Block found'], bytes([30, 30, 30, 30]))
+        self.offset \
+            = (self.img.height - self.maze.height * self.img.scale) // 2
         self.enter_x = self.maze.entry % self.maze.width + (self.img.scale - self.start[1])//3*2
         self.enter_y = self.maze.entry // self.maze.width + (self.img.scale - self.finish[1])//3*2 + self.offset
         self.exit_x = (self.maze.exit % self.maze.width) * self.img.scale + (self.img.scale - self.start[2])//2
         self.exit_y = (self.maze.exit // self.maze.width) * self.img.scale + (self.img.scale - self.finish[2])//3*2 + self.offset
-        if not self.path_finding:
-            self.maze_draw = True
         self.draw_maze(self.vars)
 
     def create_colors(self, transparency: Optional[int] = None) -> None:
