@@ -593,16 +593,16 @@ class MazeVisualizer:
                                        self.finish[0], self.exit_x, self.exit_y)
         self.maze_draw = True
         self.show_menu()
-        print(
-            f"Maze draw     : {self.maze_draw}\n"
-            f"Menu showed   : {self.menu_showed}\n"
-            f"Brick visible : {self.brick_visible}\n"
-            f"Paused        : {self.paused}\n"
-            f"Frozen        : {self.frozen}\n"
-            f"Animation     : {self.animation}\n"
-            f"Path finding  : {self.path_finding}\n"
-            f"Game mode     : {self.game_mode}"
-        )
+        # print(
+        #     f"Maze draw     : {self.maze_draw}\n"
+        #     f"Menu showed   : {self.menu_showed}\n"
+        #     f"Brick visible : {self.brick_visible}\n"
+        #     f"Paused        : {self.paused}\n"
+        #     f"Frozen        : {self.frozen}\n"
+        #     f"Animation     : {self.animation}\n"
+        #     f"Path finding  : {self.path_finding}\n"
+        #     f"Game mode     : {self.game_mode}"
+        # )
 
     def handle_game(self, arrow: Arrow):
         self.game_path = self.game_player.move(arrow)
@@ -620,22 +620,15 @@ class MazeVisualizer:
             # self.m.mlx_put_image_to_window(
             #     self.mlx, self.win.ptr, self.final_path_img.ptr, 0, self.offset)
 
-            print(intra_name, game_time, "size =", self.maze.width, "x", self.maze.height, "seed =", self.seed)
+            #print(intra_name, game_time, "size =", self.maze.width, "x", self.maze.height, "seed =", self.seed)
 
     def new_size_maze(self, x: int, y: int) -> None:
-        #self.m.mlx_put_image_to_window(
-            #self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
+        self.m.mlx_put_image_to_window(
+            self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
         self.maze.width += x
         self.maze.height += y
         if self.icon_size is not self.get_icon_size():
             self.icon_size = self.get_icon_size()
-            self.start: Tuple[Any, int, int]\
-                = self.m.mlx_png_file_to_image(
-                self.mlx, f"pictures/start{self.icon_size}.png")
-            self.finish: Tuple[Any, int, int]\
-                = self.m.mlx_png_file_to_image(
-                self.mlx, f"pictures/finish{self.icon_size}.png")
-
         self.generate_new_maze(False)
 
     def key_hook(self, keycode: int, vars: dict) -> None:
@@ -763,16 +756,16 @@ class MazeVisualizer:
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr,
                                            self.finish[0], self.exit_x, self.exit_y)
         self.set_images_and_position()
-        print(
-            f"Maze draw     : {self.maze_draw}\n"
-            f"Menu showed   : {self.menu_showed}\n"
-            f"Brick visible : {self.brick_visible}\n"
-            f"Paused        : {self.paused}\n"
-            f"Frozen        : {self.frozen}\n"
-            f"Animation     : {self.animation}\n"
-            f"Path finding  : {self.path_finding}\n"
-            f"Game mode     : {self.game_mode}"
-        )
+        # print(
+        #     f"Maze draw     : {self.maze_draw}\n"
+        #     f"Menu showed   : {self.menu_showed}\n"
+        #     f"Brick visible : {self.brick_visible}\n"
+        #     f"Paused        : {self.paused}\n"
+        #     f"Frozen        : {self.frozen}\n"
+        #     f"Animation     : {self.animation}\n"
+        #     f"Path finding  : {self.path_finding}\n"
+        #     f"Game mode     : {self.game_mode}"
+        # )
 
 
 
@@ -805,6 +798,7 @@ class MazeVisualizer:
         self.seed = randint(0, 9999) if new_seed else self.seed
         self.generator = (
             self.gen.create_maze(self.maze, self.seed, self.animation))
+        #print(self.maze.width, self.maze.height, self.maze.exit)
         #self.maze.entry = 0
         #self.maze.exit = (self.maze.width) * (self.maze.height) - 1
         self.finder = self.path_finder.find_path(self.maze)
@@ -813,8 +807,6 @@ class MazeVisualizer:
         thickness = self.img.thickness
         self.img = Image(self.m, self.mlx, self.win, self.maze)
         self.img.thickness = thickness
-        self.game_player = Player(self.maze)
-        self.game_path: List[int] = []
         if self.path_finding:
             self.maze_draw = True
 
@@ -829,6 +821,14 @@ class MazeVisualizer:
         self.enter_y = self.maze.entry // self.maze.width + (self.img.scale - self.finish[1])//3*2 + self.offset
         self.exit_x = (self.maze.exit % self.maze.width) * self.img.scale + (self.img.scale - self.start[2])//2
         self.exit_y = (self.maze.exit // self.maze.width) * self.img.scale + (self.img.scale - self.finish[2])//3*2 + self.offset
+        self.start: Tuple[Any, int, int]\
+                = self.m.mlx_png_file_to_image(
+                self.mlx, f"pictures/start{self.icon_size}.png")
+        self.finish: Tuple[Any, int, int]\
+                = self.m.mlx_png_file_to_image(
+                self.mlx, f"pictures/finish{self.icon_size}.png")
+        self.game_player = Player(self.maze)
+        #print(self.game_player.maze_map)
         self.draw_maze(self.vars)
 
     def create_colors(self, transparency: Optional[int] = None) -> None:
