@@ -340,7 +340,7 @@ class Draw():
         if isinstance(path_list, int):
             x = path_list % maze.width
             y = path_list // maze.width
-            _put_block(x, y, path_img, colors['Snake'][:3] + bytes([10]), 0)
+            _put_block(x, y, path_img, colors['Snake'][:3] + bytes([40]), 0)
             m.mlx_put_image_to_window(mlx, win.ptr, path_img.ptr, 0, offset)
             #m.mlx_pixel_put(mlx, win.ptr, 0, 0, 0xFF000000)
         else:

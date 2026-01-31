@@ -17,7 +17,7 @@ class Brick:
         self.transparency = transparency
         color = None
         mortar_color = None
-        self.color = bytes([28, 53, 116, max(255, self.transparency * 8)])\
+        self.color = bytes([28, 53, 116, 255])\
             if not color else color[:3] + bytes([255])
         self.mortar_color = bytes([30, 30, 30, 255])\
             if not mortar_color else mortar_color[:3] + bytes([255])

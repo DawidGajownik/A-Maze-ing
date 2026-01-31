@@ -14,6 +14,7 @@ class Key(IntEnum):
     K_A = 97
     K_N = 110
     K_ESCAPE = 65307
+    K_BACKSPACE = 65288
 
 
 class Numpad(IntEnum):
