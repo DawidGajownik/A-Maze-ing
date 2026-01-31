@@ -42,6 +42,7 @@ python3 a_maze_ing.py config.txt
 | Action                                 | Control                    |
 | -------------------------------------- | -------------------------- |
 | Generate new maze                      | `N`                        |
+| Increase/decrease maze size            | `Arrows`                   |
 | Restart current maze                   | `Restart icon`             |
 | Display/animation mode                 | `Animation icon`           |
 | Pause/Resume maze generation animation | `Pause/play icon`          |
@@ -61,7 +62,6 @@ python3 a_maze_ing.py config.txt
 
 | Action                      | Control                   |
 | --------------------------- | ------------------------- |
-| Increase/decrease maze size | `Arrows`                  |
 | Change wall thickness       | `+/-` (numpad)            |
 | Change maze colors          | `Color palettes`          |
 | Toggle/adjust fading effect | `W/S`                     |
