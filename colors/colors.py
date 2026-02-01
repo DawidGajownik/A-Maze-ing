@@ -57,7 +57,7 @@ def get_themes(transparency: int) -> dict:
             'Grid 2': bytes([5, 10, 5, transparency]),
             'Block found': bytes([30, 30, 30, transparency]),
             'Block not found': bytes([0, 0, 0, transparency]),
-            'Snake': bytes([0, 255, 255, transparency]),
+            'Snake': bytes([192, 96, 0, transparency]),
             'Background': bytes([0, 0, 0, transparency]),
         },
 

@@ -9,6 +9,8 @@ class Window:
         *_, self.width, self.height = screen_size
         self.height -= 100
         self.width -= 100
+        #self.height = 1080
+        #self.width -= 1920
         self.desc = desc
         self.ptr = mlx.mlx_new_window(
             mlx_ptr, self.width, self.height, self.desc)
