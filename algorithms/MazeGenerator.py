@@ -23,8 +23,9 @@ class MazeGenerator:
 
         if self.heart:
             self.create_heart()
-        if height > 7 and width > 8:
-            self.set_42()
+        if not (height > 7 and width > 8):
+            raise ValueError("Maze is to small for the '42' sign.")
+        self.set_42()
         self.is_entry_exit_valid(entry, exit)
         self.set_neighbors()
         self.remove_42_from_available()

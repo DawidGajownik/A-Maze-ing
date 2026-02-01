@@ -58,8 +58,10 @@ def main() -> None:
         check_true_false('PERFECT', config)
         perfect = config["PERFECT"].lower() == "true"
 
-        check_true_false('HEART', config)
-        heart = config['HEART'].lower() == "true"
+        heart: bool = False
+        if 'HEART' in config.keys():
+            check_true_false('HEART', config)
+            heart = config['HEART'].lower() == "true"
 
         maze = Maze(width, height, entry, exit, perfect, heart)
         seed = (int(config['SEED']) if 'SEED' in list(config.keys())
