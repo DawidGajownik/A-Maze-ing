@@ -14,7 +14,7 @@ from pathlib import Path
 def get_usernames_from_home() -> list[str]:
     return [
         p.name
-        for p in Path("/nfs/homes").iterdir()
+        for p in Path("/home").iterdir()
         if p.is_dir()
     ]
 
@@ -622,7 +622,7 @@ class MazeVisualizer:
             # self.m.mlx_put_image_to_window(
             #     self.mlx, self.win.ptr, self.final_path_img.ptr, 0, self.offset)
 
-            #print(intra_name, game_time, "size =", self.maze.width, "x", self.maze.height, "seed =", self.seed)
+            print(intra_name, game_time, "size =", self.maze.width, "x", self.maze.height, "seed =", self.seed)
 
     def new_size_maze(self, x: int, y: int) -> None:
         self.m.mlx_put_image_to_window(
@@ -797,7 +797,8 @@ class MazeVisualizer:
     def generate_new_maze(self, new_seed: bool) -> None:
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
-        self.seed = randint(0, 9999) if new_seed else self.seed
+        self.seed = randint(0, 999999999999999999999999) if new_seed else self.seed
+        self.maze.exit = self.maze.width * self.maze.height - 1
         self.generator = (
             self.gen.create_maze(self.maze, self.seed, self.animation))
         #print(self.maze.width, self.maze.height, self.maze.exit)
@@ -830,6 +831,8 @@ class MazeVisualizer:
                 = self.m.mlx_png_file_to_image(
                 self.mlx, f"pictures/finish{self.icon_size}.png")
         self.game_player = Player(self.maze)
+        self.game_path: List[int] = self.game_player.path
+
         #print(self.game_player.maze_map)
         self.draw_maze(self.vars)
 
