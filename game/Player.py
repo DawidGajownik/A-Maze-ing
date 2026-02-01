@@ -23,6 +23,7 @@ class Player:
 
         elif key_pressed == Key.K_BACKSPACE and len(self.path) > 1:
             self.path.pop()
+            self.current_position = self.path[-1]
 
         return self.path
 
