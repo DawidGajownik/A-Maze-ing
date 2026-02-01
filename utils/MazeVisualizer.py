@@ -356,14 +356,16 @@ class MazeVisualizer:
                 self.m, self.mlx, self.maze, self.img,
                 self.win, self.found[0], self.colors,
                 self.brick_visible, self.brick, self.offset)
+
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr,
                                            self.start[0], self.enter_x, self.enter_y)
             self.m.mlx_put_image_to_window(self.mlx, self.win.ptr,
                                            self.finish[0], self.exit_x, self.exit_y)
             self.time = datetime.now()
 
-        except StopIteration as e:
+        except StopIteration:
             self.maze_draw = False
+            self.game_player = Player(self.maze)
 
     def draw_path(self) -> None:
         try:
@@ -535,9 +537,9 @@ class MazeVisualizer:
             if self.game_mode:
                 self.animation = False
                 self.path_finding = False
+                self.game_player = Player(self.maze)
             else:
                 self.game_start_time = None
-                self.game_player = Player(self.maze)
                 self.game_path: List[int] = self.game_player.path
         if self.cursor_over_path_icon(x, y):
             self.path_finding = not self.path_finding
@@ -625,8 +627,8 @@ class MazeVisualizer:
     def new_size_maze(self, x: int, y: int) -> None:
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
-        self.maze.width += x
-        self.maze.height += y
+        self.maze.set_width(self.maze.width + x)
+        self.maze.set_height(self.maze.height + y)
         if self.icon_size is not self.get_icon_size():
             self.icon_size = self.get_icon_size()
         self.generate_new_maze(False)

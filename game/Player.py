@@ -1,5 +1,5 @@
 from objects import Maze
-from enums import Arrow, Direction
+from enums import Arrow, Direction, Key
 from typing import List, Union
 
 
@@ -11,15 +11,18 @@ class Player:
         self.width = maze.width
         self.path: List[int] = [maze.entry]
 
-    def move(self, key_pressed: Arrow) -> List[int]:
+    def move(self, key_pressed: Arrow | Key) -> List[int]:
         direction = self._get_direction(key_pressed)
 
         if direction is not None and self._is_valid_move(direction):
             self._get_next_cell(direction)
             if self.current_position in self.path:
-                self.remove_loop()
+                self._remove_loop()
             else:
                 self.path.append(self.current_position)
+
+        elif key_pressed == Key.K_BACKSPACE and len(self.path) > 1:
+            self.path.pop()
 
         return self.path
 
@@ -53,6 +56,6 @@ class Player:
         if direction == Direction.WEST:
             self.current_position -= 1
 
-    def remove_loop(self) -> None:
+    def _remove_loop(self) -> None:
         while len(self.path) != 0 and self.path[-1] != self.current_position:
             self.path.pop()

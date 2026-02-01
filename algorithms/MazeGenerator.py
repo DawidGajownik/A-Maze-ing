@@ -5,9 +5,6 @@ from objects import Maze
 
 
 class MazeGenerator:
-    old_width: int = 0
-    old_height: int = 0
-
     def prepare_data(self, seed: int, width: int, height: int,
                      is_perfect: bool, heart: bool,
                      entry: int, exit: int, maze: Maze) -> None:
@@ -18,17 +15,6 @@ class MazeGenerator:
 
         self.width = width
         self.height = height
-        if MazeGenerator.old_width == 0 and MazeGenerator.old_height == 0:
-            MazeGenerator.old_width = width
-            MazeGenerator.old_height = height
-
-        elif (MazeGenerator.old_width != self.width
-              or MazeGenerator.old_height != self.height):
-            maze.entry = 0
-            maze.exit = (height - 1) * width + width - 1
-            entry = maze.entry
-            exit = maze.exit
-
         self.found: Set[int] = set()
         self.seed = seed
         self.is_perfect = is_perfect
