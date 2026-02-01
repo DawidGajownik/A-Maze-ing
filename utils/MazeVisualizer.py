@@ -538,9 +538,11 @@ class MazeVisualizer:
                 self.animation = False
                 self.path_finding = False
                 self.game_player = Player(self.maze)
+                self.game_path: List[int] = self.game_player.path
+
             else:
                 self.game_start_time = None
-                self.game_path: List[int] = self.game_player.path
+
         if self.cursor_over_path_icon(x, y):
             self.path_finding = not self.path_finding
             if self.path_finding:
@@ -644,7 +646,13 @@ class MazeVisualizer:
         if Key.K_G == keycode:
             self.game_mode = not self.game_mode
             if self.game_mode:
+                self.animation = False
                 self.path_finding = False
+                self.game_player = Player(self.maze)
+                self.game_path: List[int] = self.game_player.path
+
+            else:
+                self.game_start_time = None
 
         if Key.K_ESCAPE == keycode:
             m.mlx_destroy_window(mlx, win.ptr)
@@ -798,7 +806,7 @@ class MazeVisualizer:
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
         self.seed = randint(0, 999999999999999999999999) if new_seed else self.seed
-        self.maze.exit = self.maze.width * self.maze.height - 1
+        #self.maze.exit = self.maze.width * self.maze.height - 1
         self.generator = (
             self.gen.create_maze(self.maze, self.seed, self.animation))
         #print(self.maze.width, self.maze.height, self.maze.exit)
@@ -832,7 +840,7 @@ class MazeVisualizer:
                 self.mlx, f"pictures/finish{self.icon_size}.png")
         self.game_player = Player(self.maze)
         self.game_path: List[int] = self.game_player.path
-
+        self.game_start_time = None
         #print(self.game_player.maze_map)
         self.draw_maze(self.vars)
 
