@@ -1,9 +1,8 @@
-from typing import Any, Union
+from typing import Any, Union, List
 from random import randint
 from mlx import Mlx
 from objects import Image, Window, Brick
-from mazegen import Maze
-from mazegen.Direction import Direction
+from mazegen import Maze, Direction
 
 
 def _put_block(
@@ -76,13 +75,8 @@ def _put_down(color: bytes,
 
     start_x = i * img.scale + thickness - 1
 
-    y_start = (
-            (j + 1) * img.scale
-            - thickness
-            + (thickness if j == maze.height - 1 else 0)
-            + thickness
-    )
-    y_end = (j + 1) * img.scale + thickness
+    y_start = ((j + 1) * img.scale)
+    y_end = y_start + thickness
 
     x0 = start_x + w_range[0]
     x1 = start_x + w_range[1]
@@ -176,47 +170,87 @@ def _put_road_block(
         offset = (y * img.width + start_x) * 4
         img.data[offset: offset + size_x * 4] = row
 
+def left_wall_painted(found: List[int], idx):
+    return (idx > 0 and (found[idx - 1] - found[idx] != -1) and (idx < len(found) - 1 and found[idx + 1] - found[idx] != -1)
+            or (idx == len(found) - 1 and found[idx] - found[idx - 1] != 1)
+            or (idx == 0 and found[1] - found[0] != -1))
+
+def right_wall_painted(found: List[int], idx):
+    return (idx > 0 and (found[idx - 1] - found[idx] != 1) and (idx < len(found) - 1 and found[idx + 1] - found[idx] != 1)
+            or (idx == len(found) - 1 and found[idx] - found[idx - 1] != -1)
+            or (idx == 0 and found[1] - found[0] != 1))
+
+def upper_wall_painted(found: List[int], idx, maze: Maze):
+    return (idx > 0 and (found[idx-1] - found[idx] != -maze.width) and (idx < len(found)-1 and found[idx+1] - found[idx] != -maze.width)
+            or (idx == len(found) - 1 and found[idx] - found[idx - 1] != maze.width)
+            or (idx == 0 and found[1] - found[0] != -maze.width))
+
+def down_wall_painted(found: List[int], idx, maze: Maze):
+    return (idx > 0 and (found[idx-1] - found[idx] != maze.width) and (idx < len(found)-1 and found[idx+1] - found[idx] != maze.width)
+            or (idx == len(found) - 1 and found[idx] - found[idx - 1] != -maze.width)
+            or (idx == 0 and found[1] - found[0] != maze.width))
+
 
 def _paint_snake(
         maze: Maze, colors: dict, img: Image,
-        wall_range: tuple, x: int, y: int) -> None:
+        wall_range: tuple, x: int, y: int, found: List[int]) -> None:
     _put_block(x, y, img, colors['Snake'], 0)
     # checking which wall should be painted
-    # left is not a snake
-    if maze.map[y * maze.width + x - 1] != 16:
+    #print(x, y, x*y, found)
+    idx = found.index(y * maze.width + x)
+
+    if left_wall_painted(found, idx):
         _put_left(colors['Grid 1'], x, y, img, wall_range, img.thickness)
         _put_right(colors['Grid 1'], x-1, y, img, wall_range, img.thickness)
-    # right is not a snake
-    if x == maze.width - 1 or maze.map[y * maze.width + x + 1] != 16:
+    if right_wall_painted(found, idx):
         _put_right(colors['Grid 1'], x, y, img, wall_range, img.thickness)
         _put_left(colors['Grid 1'], x+1, y, img, wall_range, img.thickness)
-    # upper is not a snake
-    if maze.map[(y - 1) * maze.width + x] != 16:
+    if upper_wall_painted(found, idx, maze):
         _put_up(colors['Grid 1'], x, y, img, wall_range, img.thickness)
         _put_down(
             colors['Grid 1'], x, y-1, img, maze, wall_range, img.thickness)
-    # down is not a snake
-    if y == maze.height - 1 or maze.map[(y + 1) * maze.width + x] != 16:
+    if down_wall_painted(found, idx, maze):
         _put_down(colors['Grid 1'], x, y, img, maze, wall_range, img.thickness)
         _put_up(colors['Grid 1'], x, y + 1, img, wall_range, img.thickness)
-    # left is a snake
-    if maze.map[y * maze.width + x - 1] == 16:
-        # left up is not a snake
-        if maze.map[(y - 1) * maze.width + x - 1] != 16:
-            _put_up(
-                colors['Grid 1'], x - 1, y,
-                img, wall_range, img.thickness)
-            _put_down(
-                colors['Grid 1'], x - 1, y - 1,
-                img, maze, wall_range, img.thickness)
-            # right up is snake
-            if maze.map[(y - 1) * maze.width + x] == 16:
+    if not left_wall_painted(found, idx):
+        if (y - 1) * maze.width + x in found:
+            idx_upper = found.index((y - 1) * maze.width + x)
+            if left_wall_painted(found, idx_upper):
                 _put_left(
                     colors['Grid 1'], x, y - 1,
                     img, wall_range, img.thickness)
                 _put_right(
                     colors['Grid 1'], x - 1, y - 1,
                     img, wall_range, img.thickness)
+        try:
+            if not upper_wall_painted(found, idx, maze):
+                if (y * maze.width + x - 1) in found:
+                    idx_left = found.index(y * maze.width + x - 1)
+                    if upper_wall_painted(found, idx_left, maze):
+                        _put_up(
+                            colors['Grid 1'], x - 1, y,
+                            img, wall_range, img.thickness)
+                        _put_down(
+                            colors['Grid 1'], x - 1, y - 1,
+                            img, maze, wall_range, img.thickness)
+        except IndexError:
+            return
+                        # left up is not a snake
+        #if maze.map[(y - 1) * maze.width + x - 1] != 16:
+            # _put_up(
+            #     colors['Grid 1'], x - 1, y,
+            #     img, wall_range, img.thickness)
+            # _put_down(
+            #     colors['Grid 1'], x - 1, y - 1,
+            #     img, maze, wall_range, img.thickness)
+            # # right up is snake
+            # if maze.map[(y - 1) * maze.width + x] == 16:
+            #     _put_left(
+            #         colors['Grid 1'], x, y - 1,
+            #         img, wall_range, img.thickness)
+            #     _put_right(
+            #         colors['Grid 1'], x - 1, y - 1,
+            #         img, wall_range, img.thickness)
 
 
 def _is_found(x: int, y: int, maze: Maze, found: set[int]) -> bool:
@@ -289,9 +323,6 @@ def _paint_south_wall(
         wall_range: int, x: int, y: int) -> None:
     _put_down(colors['Grid 1'], x, y, img, maze, wall_range, img.thickness)
     _put_up(colors['Grid 1'], x, y + 1, img, wall_range, img.thickness)
-    if y == maze.height:
-        _put_down(
-            colors['Grid 1'], x, y - 1, img, maze, wall_range, img.thickness)
 
 
 def _paint_north_wall(
@@ -362,7 +393,7 @@ class Draw():
 
     def draw_maze(
             cls, m: Mlx, mlx: Any, maze: Maze, img: Image,
-            win: Window, found: set[int], colors: dict,
+            win: Window, found: tuple[set[int], List[int]], colors: dict,
             brick_visible: bool,
             brick: Brick, offset: int
             ) -> None:
@@ -373,21 +404,17 @@ class Draw():
         for y in range(maze.height):
             for x in range(maze.width):
                 if len(maze.map) > 0:
-                    if _is_found(x, y, maze, found):
+                    if _is_found(x, y, maze, found[0]):
                         if brick_visible:
                             _put_brick(x, y, img, 0, brick)
                         else:
                             _put_block(
                                 x, y, img, colors['Block found'],
                                 max(1, img.thickness//2))
-                    # if _is_start(x, y, maze):
-                    #     _paint_start(img, maze, colors, wall_range, x, y)
-                    # if _is_finish(x, y, maze):
-                    #     _paint_finish(img, maze, colors, wall_range, x, y)
                     if _is_forty_two(x, y, maze):
                         _paint_forty_two(img, maze, colors, wall_range, x, y)
-                    if _is_snake(x, y, maze):
-                        _paint_snake(maze, colors, img, wall_range, x, y)
+                    if _is_found(x, y, maze, found[1]):
+                        _paint_snake(maze, colors, img, wall_range, x, y, found[1])
                     if _south_wall_closed(x, y, maze):
                         _paint_south_wall(img, maze, colors, wall_range, x, y)
                     if _north_wall_closed(x, y, maze):
