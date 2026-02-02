@@ -9,7 +9,7 @@ class Image():
                  width: int | None = None,
                  height: int | None = None
                  ):
-        self.height = win.height - 16
+        self.height = win.height - 64
         self.width = win.width // 8 * 7
         self.set_scale(maze)
         self.height = height if height else maze.height * self.scale

@@ -562,7 +562,8 @@ class MazeVisualizer:
 
         if self.cursor_over_animation_icon(x, y):
             self.animation = not self.animation
-            if not self.path_finding:
+
+            if not self.path_finding or self.maze_draw:
                 self.generator = (
                     self.gen.create_maze(self.maze, self.seed, self.animation))
             if not self.animation:
@@ -812,12 +813,8 @@ class MazeVisualizer:
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
         self.seed = randint(0, 999999999999999999999999) if new_seed else self.seed
-        #self.maze.exit = self.maze.width * self.maze.height - 1
         self.generator = (
             self.gen.create_maze(self.maze, self.seed, self.animation))
-        #print(self.maze.width, self.maze.height, self.maze.exit)
-        #self.maze.entry = 0
-        #self.maze.exit = (self.maze.width) * (self.maze.height) - 1
         self.finder = self.path_finder.find_path(self.maze)
         self.path_img = Image(self.m, self.mlx, self.win, self.maze)
         self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
@@ -834,8 +831,8 @@ class MazeVisualizer:
             self.colors['Block found'], bytes([30, 30, 30, 30]))
         self.offset \
             = (self.img.height - self.maze.height * self.img.scale) // 2
-        self.enter_x = self.maze.entry % self.maze.width + (self.img.scale - self.start[1])//3*2
-        self.enter_y = self.maze.entry // self.maze.width + (self.img.scale - self.finish[1])//3*2 + self.offset
+        self.enter_x = (self.maze.entry % self.maze.width) * self.img.scale + (self.img.scale - self.start[1])//3*2
+        self.enter_y = (self.maze.entry // self.maze.width) * self.img.scale + (self.img.scale - self.finish[1])//3*2 + self.offset
         self.exit_x = (self.maze.exit % self.maze.width) * self.img.scale + (self.img.scale - self.start[2])//2
         self.exit_y = (self.maze.exit // self.maze.width) * self.img.scale + (self.img.scale - self.finish[2])//3*2 + self.offset
         self.start: Tuple[Any, int, int]\
