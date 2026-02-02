@@ -1,5 +1,6 @@
-from objects import Maze
-from enums import Arrow, Direction, Key
+from mazegen import Maze
+from enums import Arrow, Key
+from mazegen import Direction
 from typing import List, Union
 
 

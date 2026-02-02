@@ -3,13 +3,14 @@ from datetime import datetime
 from random import randint
 from typing import Tuple, Any, List, Optional
 from mlx import Mlx
-from algorithms import PathFinder, MazeGenerator
-from objects import Image, Window, Brick, Maze
+from mazegen import PathFinder, MazeGenerator, Maze
+from objects import Image, Window, Brick
 from colors import colors
 from .Draw import Draw
 from game.Player import Player
 from enums import Key, Arrow, Numpad
 from pathlib import Path
+
 
 def get_usernames_from_home() -> list[str]:
     return [

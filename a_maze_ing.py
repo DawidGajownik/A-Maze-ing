@@ -1,6 +1,5 @@
-from objects import Maze
 from random import randint
-from algorithms import MazeGenerator, PathFinder
+from mazegen import MazeGenerator, PathFinder, Maze
 from utils import MazeVisualizer
 from typing import Dict
 from sys import argv

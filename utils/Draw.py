@@ -1,8 +1,9 @@
 from typing import Any, Union
 from random import randint
 from mlx import Mlx
-from objects import Image, Window, Brick, Maze
-from enums import Direction
+from objects import Image, Window, Brick
+from mazegen import Maze
+from mazegen.Direction import Direction
 
 
 def _put_block(

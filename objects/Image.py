@@ -1,6 +1,6 @@
 from mlx import Mlx
 from .Window import Window
-from .Maze import Maze
+from mazegen import Maze
 from typing import Any
 
 
