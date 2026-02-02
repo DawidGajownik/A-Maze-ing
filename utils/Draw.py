@@ -397,9 +397,11 @@ class Draw():
             brick_visible: bool,
             brick: Brick, offset: int
             ) -> None:
-        img.data[:] = colors['Background'] * (len(img.data)//4)
-        #img.data[:(img.scale * (maze.height+1) * img.width) * 4] = colors['Grid 2'] * (
-         #S       img.scale * (maze.height+1) * img.width)
+        row = img.size_line // 4
+        maze_width = maze.width * img.scale
+        rest = row - maze_width
+
+        img.data[:img.size_line * maze.height * img.scale] = (colors['Background'] * maze_width + bytes([0, 0, 0, 255]) * rest) * maze.height * img.scale
         wall_range = (-img.thickness+1, img.scale + img.thickness)
         for y in range(maze.height):
             for x in range(maze.width):
