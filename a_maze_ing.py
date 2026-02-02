@@ -1,11 +1,11 @@
 from random import randint
 from mazegen import MazeGenerator, PathFinder, Maze
 from utils import MazeVisualizer
-from typing import Dict
+from typing import Dict, Tuple
 from sys import argv
 
 
-def check_entry_exit_coordinates(entry: int, exit: int,
+def check_entry_exit_coordinates(entry: Tuple[int, int], exit: Tuple[int, int],
                                  width: int, height: int) -> None:
     if (entry[0] < 0 or entry[0] > width - 1
         or entry[1] < 0 or entry[1] > height - 1
@@ -44,10 +44,10 @@ def main() -> None:
     try:
         width = int(config["WIDTH"])
         height = int(config["HEIGHT"])
-        entry = str((config["ENTRY"])).split(",")
-        exit = str((config["EXIT"])).split(",")
-        entry = int(entry[0]), int(entry[1])
-        exit = int(exit[0]), int(exit[1])
+        entry_str = str((config["ENTRY"])).split(",")
+        exit_str = str((config["EXIT"])).split(",")
+        entry = (int(entry_str[0]), int(entry_str[1]))
+        exit = (int(exit_str[0]), int(exit_str[1]))
 
         check_entry_exit_coordinates(entry, exit, width, height)
 
@@ -69,8 +69,8 @@ def main() -> None:
         generator = MazeGenerator()
         finder = PathFinder()
         maze_map_hex = generator.create_maze_instant(maze, seed)
-        path_str = finder.find_path_instant(maze)
-        path_str = finder.get_str_path(path_str)
+        path = finder.find_path_instant(maze)
+        path_str = finder.get_str_path(path)
 
         with open(output, "w") as file:
             file.write(maze_map_hex)

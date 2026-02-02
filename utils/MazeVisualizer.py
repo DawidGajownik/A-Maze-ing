@@ -703,7 +703,7 @@ class MazeVisualizer:
             self.decrease_transparency()
 
         if Key.K_D == keycode:
-            if self.theme_idx < 30:
+            if self.theme_idx < 6:
                 self.theme_idx += 1
             self.set_theme()
 

@@ -22,7 +22,7 @@ class PathFinder:
         self.width: int = manager.width
         self.maze: list[Any] = manager.map
 
-    def find_path_instant(self, manager: Maze) -> str:
+    def find_path_instant(self, manager: Maze) -> List[int]:
         """
         Find the shortest path from entry to exit in the maze instantly (BFS).
 
@@ -63,7 +63,7 @@ class PathFinder:
         return path
 
     def find_path(
-            self, manager: Maze) -> Generator[int | list[int], None, str]:
+            self, manager: Maze) -> Generator[int | list[int], None, None]:
         """
         Find the shortest path and yield intermediate steps for visualization.
 
@@ -107,8 +107,6 @@ class PathFinder:
         path.append(self.entry)
         path.reverse()
         yield path
-
-        return self.get_str_path(path)
 
     def find_neighbors(self, current: int) -> Generator[int,
                                                         None,
@@ -162,4 +160,6 @@ class PathFinder:
                 directions.append("N")
             previous = cell
 
-        return "".join(directions)
+        str_path: str = "".join(directions)
+
+        return str_path
