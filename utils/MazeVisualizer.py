@@ -334,13 +334,17 @@ class MazeVisualizer:
 
     def draw_game(self) -> None:
         self.draw_ready_maze_to_window()
+        self.final_path_img.data[:] = bytes([0])*len(self.final_path_img.data)
         if self.game_start_time is not None:
             self.m.mlx_string_put(
                 self.mlx, self.win.ptr, self.win.width // 8 * 7 - 130,
                 self.win.height - 30, 0xffffffff,
                 self.format_seconds(
                     (datetime.now() - self.game_start_time).total_seconds()))
-        self.show_path(False)
+        self.draw.draw_path(
+            self.m, self.mlx, self.maze, self.img,
+            self.path_img, self.final_path_img, self.win,
+            self.game_path, self.colors, self.offset, False)
         self.show_enter_and_exit()
 
     def create_player(self) -> None:
@@ -700,26 +704,34 @@ class MazeVisualizer:
         if Arrow.LEFT == keycode:
             if self.game_mode:
                 self.handle_game(Arrow.LEFT)
-            elif self.maze.width > 9:
+            elif self.maze.width > 9 and not self.maze.heart:
                 self.new_size_maze(-1, 0)
+            else:
+                return
 
         if Arrow.UP == keycode:
             if self.game_mode:
                 self.handle_game(Arrow.UP)
-            elif self.maze.height > 7:
+            elif self.maze.height > 7 and not self.maze.heart:
                 self.new_size_maze(0, -1)
+            else:
+                return
 
         if Arrow.RIGHT == keycode:
             if self.game_mode:
                 self.handle_game(Arrow.RIGHT)
-            else:
+            elif not self.maze.heart:
                 self.new_size_maze(1, 0)
+            else:
+                return
 
         if Arrow.DOWN == keycode:
             if self.game_mode:
                 self.handle_game(Arrow.DOWN)
-            else:
+            elif not self.maze.heart:
                 self.new_size_maze(0, 1)
+            else:
+                return
 
         self.brick.size = self.img.scale
         self.brick.texture_create()

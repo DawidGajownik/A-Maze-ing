@@ -2,7 +2,7 @@ from typing import Dict, List, Deque, Set, Generator
 from .Direction import Direction
 from collections import deque
 from .Maze import Maze
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 
 class PathFinder:
@@ -63,7 +63,8 @@ class PathFinder:
         return path
 
     def find_path(
-            self, manager: Maze) -> Generator[int, None, list[int]]:
+            self, manager: Maze
+            ) -> Generator[int, None, Union[list[int], int]]:
         """
         Find the shortest path and yield intermediate steps for visualization.
 
@@ -106,7 +107,7 @@ class PathFinder:
 
         path.append(self.entry)
         path.reverse()
-        return path
+        yield path
 
     def _collect_accessible_neighbors(self, current: int) -> Generator[int,
                                                                        None,

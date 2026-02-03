@@ -171,7 +171,7 @@ def _put_road_block(
         img.data[offset: offset + size_x * 4] = row
 
 
-def left_wall_painted(found: List[int], idx):
+def left_wall_painted(found: List[int], idx: int) -> bool:
     return (
         idx > 0 and (found[idx - 1] - found[idx] != -1) and (
             idx < len(found) - 1 and found[idx + 1] - found[idx] != -1
@@ -181,7 +181,7 @@ def left_wall_painted(found: List[int], idx):
                     ) or (idx == 0 and found[1] - found[0] != -1))
 
 
-def right_wall_painted(found: List[int], idx):
+def right_wall_painted(found: List[int], idx: int) -> bool:
     return (
         idx > 0 and (found[idx - 1] - found[idx] != 1) and (
             idx < len(found) - 1 and found[idx + 1] - found[idx] != 1
@@ -191,7 +191,7 @@ def right_wall_painted(found: List[int], idx):
                     ) or (idx == 0 and found[1] - found[0] != 1))
 
 
-def upper_wall_painted(found: List[int], idx, maze: Maze):
+def upper_wall_painted(found: List[int], idx: int, maze: Maze) -> bool:
     return (
         idx > 0 and (found[idx-1] - found[idx] != -maze.width) and (
             idx < len(found)-1 and found[idx+1] - found[idx] != -maze.width
@@ -201,7 +201,7 @@ def upper_wall_painted(found: List[int], idx, maze: Maze):
                     ) or (idx == 0 and found[1] - found[0] != -maze.width))
 
 
-def down_wall_painted(found: List[int], idx, maze: Maze):
+def down_wall_painted(found: List[int], idx: int, maze: Maze) -> bool:
     return (
         idx > 0 and (found[idx-1] - found[idx] != maze.width) and (
             idx < len(found)-1 and found[idx+1] - found[idx] != maze.width
@@ -254,7 +254,9 @@ def _paint_snake(
             return
 
 
-def _is_found(x: int, y: int, maze: Maze, found: set[int]) -> bool:
+def _is_found(
+        x: int, y: int, maze: Maze,
+        found: Union[list[int], set[int]]) -> bool:
     return (y * maze.width + x) in found
 
 
@@ -275,32 +277,38 @@ def _is_snake(x: int, y: int, maze: Maze) -> bool:
 
 
 def _south_wall_closed(x: int, y: int, maze: Maze) -> bool:
-    return maze.map[y * maze.width + x] & (1 << Direction.SOUTH.value)
+    return bool(
+        maze.map[y * maze.width + x] & (1 << Direction.SOUTH.value))
 
 
 def _north_wall_closed(x: int, y: int, maze: Maze) -> bool:
-    return maze.map[y * maze.width + x] & (1 << Direction.NORTH.value)
+    return bool(
+        maze.map[y * maze.width + x] & (1 << Direction.NORTH.value))
 
 
 def _west_wall_closed(x: int, y: int, maze: Maze) -> bool:
-    return maze.map[y * maze.width + x] & (1 << Direction.WEST.value)
+    return bool(
+        maze.map[y * maze.width + x] & (1 << Direction.WEST.value))
 
 
 def _east_wall_closed(x: int, y: int, maze: Maze) -> bool:
-    return maze.map[y * maze.width + x] & (1 << Direction.EAST.value)
+    return bool(
+        maze.map[y * maze.width + x] & (1 << Direction.EAST.value))
 
 
 def _left_block_north_wall_closed(x: int, y: int, maze: Maze) -> bool:
-    return maze.map[y * maze.width + x - 1] & (1 << Direction.NORTH.value)
+    return bool(
+        maze.map[y * maze.width + x - 1] & (1 << Direction.NORTH.value))
 
 
 def _upper_block_west_wall_closed(x: int, y: int, maze: Maze) -> bool:
-    return maze.map[(y - 1) * maze.width + x] & (1 << Direction.WEST.value)
+    return bool(
+        maze.map[(y - 1) * maze.width + x] & (1 << Direction.WEST.value))
 
 
 def _paint_forty_two(
         img: Image, maze: Maze, colors: dict,
-        wall_range: int, x: int, y: int) -> None:
+        wall_range: tuple[int, int], x: int, y: int) -> None:
     _put_block(x, y, img, colors['42'], img.thickness)
     _put_down(colors['Grid 1'], x, y-1, img, maze, wall_range, img.thickness)
     _put_up(colors['Grid 1'], x, y+1, img, wall_range, img.thickness)
@@ -309,47 +317,47 @@ def _paint_forty_two(
 
 def _paint_start(
         img: Image, maze: Maze, colors: dict,
-        wall_range: int, x: int, y: int) -> None:
+        wall_range: tuple[int, int], x: int, y: int) -> None:
     _put_block(x, y, img, bytes([255, 0, 0, 255]), img.thickness)
 
 
 def _paint_finish(
         img: Image, maze: Maze, colors: dict,
-        wall_range: int, x: int, y: int) -> None:
+        wall_range: tuple[int, int], x: int, y: int) -> None:
     _put_block(x, y, img, bytes([0, 0, 255, 255]), img.thickness)
 
 
 def _paint_south_wall(
         img: Image, maze: Maze, colors: dict,
-        wall_range: int, x: int, y: int) -> None:
+        wall_range: tuple[int, int], x: int, y: int) -> None:
     _put_down(colors['Grid 1'], x, y, img, maze, wall_range, img.thickness)
     _put_up(colors['Grid 1'], x, y + 1, img, wall_range, img.thickness)
 
 
 def _paint_north_wall(
         img: Image, maze: Maze, colors: dict,
-        wall_range: int, x: int, y: int) -> None:
+        wall_range: tuple[int, int], x: int, y: int) -> None:
     _put_up(colors['Grid 1'], x, y, img, wall_range, img.thickness)
     _put_down(colors['Grid 1'], x, y-1, img, maze, wall_range, img.thickness)
 
 
 def _paint_west_wall(
         img: Image, maze: Maze, colors: dict,
-        wall_range: int, x: int, y: int) -> None:
+        wall_range: tuple[int, int], x: int, y: int) -> None:
     _put_left(colors['Grid 1'], x, y, img, wall_range, img.thickness)
     _put_right(colors['Grid 1'], x-1, y, img, wall_range, img.thickness)
 
 
 def _paint_east_wall(
         img: Image, maze: Maze, colors: dict,
-        wall_range: int, x: int, y: int) -> None:
+        wall_range: tuple[int, int], x: int, y: int) -> None:
     _put_right(colors['Grid 1'], x, y, img, wall_range, img.thickness)
     _put_left(colors['Grid 1'], x+1, y, img, wall_range, img.thickness)
 
 
 def _repaint_left_block_north_wall(
         img: Image, maze: Maze, colors: dict,
-        wall_range: int, x: int, y: int) -> None:
+        wall_range: tuple[int, int], x: int, y: int) -> None:
     _put_up(colors['Grid 1'], x - 1, y, img, wall_range, img.thickness)
     _put_down(
         colors['Grid 1'], x - 1, y-1, img, maze, wall_range, img.thickness)
@@ -357,7 +365,7 @@ def _repaint_left_block_north_wall(
 
 def _repaint_upper_block_west_wall(
         img: Image, maze: Maze, colors: dict,
-        wall_range: int, x: int, y: int) -> None:
+        wall_range: tuple[int, int], x: int, y: int) -> None:
     _put_left(colors['Grid 1'], x, y - 1, img, wall_range, img.thickness)
     _put_right(colors['Grid 1'], x - 1, y - 1, img, wall_range, img.thickness)
 
