@@ -30,8 +30,8 @@ clean:
 
 # Mandatory lint with specified flags
 lint:
-	$(BIN)/flake8 .
-	$(BIN)/mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	$(BIN)/flake8 . --exclude=$(VENV)
+	$(BIN)/mypy . --exclude $(VENV) --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 # Optional strict checking
 lint-strict:

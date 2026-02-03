@@ -241,7 +241,8 @@ class MazeGenerator:
         for i, cell in enumerate(self.maze_map):
             if cell in end_blocks:
                 new_connection = self.maze_random.choice(self.neighbors[i])
-                direction = self._derive_path_directions([i, new_connection])[0]
+                direction = self._derive_path_directions(
+                    [i, new_connection])[0]
                 self._update_walls_for_passage(i, new_connection, direction)
 
     def get_maze_str(self) -> str:
@@ -354,7 +355,7 @@ class MazeGenerator:
             i -= 1
 
     def _select_random_neighbor(self, current_pos: int,
-                       path: List[int]) -> int:
+                                path: List[int]) -> int:
         """
         Choose a random neighbor to move to for the random walk.
 

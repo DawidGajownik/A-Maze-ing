@@ -28,7 +28,8 @@ def check_output_file_type(file_name: str) -> None:
 
 def check_if_key_is_valid(key: str) -> None:
     keys: Set[str] = {
-        "WIDTH", "HEIGHT","ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT", "HEART", "SEED"
+        "WIDTH", "HEIGHT", "ENTRY", "EXIT",
+        "OUTPUT_FILE", "PERFECT", "HEART", "SEED"
         }
 
     if key not in keys:

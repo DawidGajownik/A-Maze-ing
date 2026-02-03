@@ -12,7 +12,7 @@ class Player:
         self.width = maze.width
         self.path: List[int] = [maze.entry]
 
-    def move(self, key_pressed: Arrow | Key) -> List[int]:
+    def move(self, key_pressed: Arrow) -> List[int]:
         direction = self._get_direction(key_pressed)
 
         if direction is not None and self._is_valid_move(direction):

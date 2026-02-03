@@ -109,8 +109,8 @@ class PathFinder:
         yield path
 
     def _collect_accessible_neighbors(self, current: int) -> Generator[int,
-                                                        None,
-                                                        None]:
+                                                                       None,
+                                                                       None]:
         """
         Find valid neighbors for a given cell.
 

@@ -5,7 +5,7 @@ from typing import Tuple, Any, List, Optional
 from mlx import Mlx
 from mazegen import PathFinder, MazeGenerator, Maze
 from objects import Image, Window, Brick
-from colors import colors
+from colors import themes
 from .Draw import Draw
 from game.Player import Player
 from enums import Key, Arrow, Numpad
@@ -61,9 +61,9 @@ class MazeVisualizer:
         self.theme_idx = 1
         self.path_finder = path_finder
         self.finder = self.path_finder.find_path(maze)
-        self.themes = colors.get_themes(self.transparency)
+        self.themes = themes.get_themes(self.transparency)
         self.colors = copy(self.themes[self.theme_idx])
-        self.palette = colors.get_palette()
+        self.palette = themes.get_palette()
         self.img = Image(self.m, self.mlx, self.win, self.maze)
         self.path_img = Image(self.m, self.mlx, self.win, self.maze)
         self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
