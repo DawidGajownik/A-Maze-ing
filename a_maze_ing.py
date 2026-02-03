@@ -7,6 +7,18 @@ from sys import argv
 
 def check_entry_exit_coordinates(entry: Tuple[int, int], exit: Tuple[int, int],
                                  width: int, height: int) -> None:
+    """
+    Validate that entry and exit coordinates are within maze bounds and distinct.
+
+    Args:
+        entry (Tuple[int, int]): The (x, y) coordinates of the entry point.
+        exit (Tuple[int, int]): The (x, y) coordinates of the exit point.
+        width (int): The width of the maze.
+        height (int): The height of the maze.
+
+    Raises:
+        ValueError: If coordinates are out of bounds or entry equals exit.
+    """
     if (entry[0] < 0 or entry[0] > width - 1
         or entry[1] < 0 or entry[1] > height - 1
         or exit[0] < 0 or exit[0] > width - 1
@@ -16,17 +28,45 @@ def check_entry_exit_coordinates(entry: Tuple[int, int], exit: Tuple[int, int],
 
 
 def check_true_false(key: str, config: Dict[str, str]) -> None:
+    """
+    Verify that a configuration key's value is a boolean string ('True' or 'False').
+
+    Args:
+        key (str): The dictionary key to check.
+        config (Dict[str, str]): The configuration dictionary.
+
+    Raises:
+        ValueError: If the value associated with the key is not 'True' or 'False'.
+    """
     if not (config[key].lower() == "true"
             or config[key].lower() == "false"):
         raise ValueError(f"{key}: Diffrent from 'True' or 'False'.")
 
 
 def check_output_file_type(file_name: str) -> None:
+    """
+    Ensure that the output filename ends with '.txt'.
+
+    Args:
+        file_name (str): The filename to validate.
+
+    Raises:
+        ValueError: If the filename does not end with '.txt'.
+    """
     if file_name[-4:] != ".txt":
         raise ValueError("Invalid output file type. ('*.txt' required)")
 
 
 def check_if_key_is_valid(key: str) -> None:
+    """
+    Check if the configuration key is one of the allowed keys.
+
+    Args:
+        key (str): The configuration key to validate.
+
+    Raises:
+        KeyError: If the key is not in the set of valid keys.
+    """
     keys: Set[str] = {
         "WIDTH", "HEIGHT", "ENTRY", "EXIT",
         "OUTPUT_FILE", "PERFECT", "HEART", "SEED"
@@ -37,6 +77,13 @@ def check_if_key_is_valid(key: str) -> None:
 
 
 def main() -> None:
+    """
+    Main function to load config, generate maze, save output, and verify visualization.
+
+    Reads configuration from a file specified in command line arguments,
+    validates parameters, generates the maze and solution, writes to an output file,
+    and launches the visualizer.
+    """
     try:
         config = {}
         with open(argv[1]) as f:
