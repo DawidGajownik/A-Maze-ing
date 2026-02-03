@@ -1,4 +1,5 @@
 def get_palette() -> list[bytes]:
+    """Return a list of RGBA color bytes for various game elements."""
     return [
             bytes([255, 255, 255, 255]), bytes([192, 192, 192, 255]),
             bytes([255, 192, 192, 255]), bytes([255, 224, 192, 255]),
@@ -10,37 +11,31 @@ def get_palette() -> list[bytes]:
             bytes([255, 255, 160, 255]), bytes([160, 255, 160, 255]),
             bytes([160, 255, 255, 255]), bytes([160, 160, 255, 255]),
 
-            # rząd 3
             bytes([192, 192, 192, 255]), bytes([128, 128, 128, 255]),
             bytes([255, 128, 128, 255]), bytes([255, 160, 128, 255]),
             bytes([255, 255, 128, 255]), bytes([128, 255, 128, 255]),
             bytes([128, 255, 255, 255]), bytes([128, 128, 255, 255]),
 
-            # rząd 4
             bytes([160, 160, 160, 255]), bytes([96, 96, 96, 255]),
             bytes([255, 96, 96, 255]), bytes([255, 128, 96, 255]),
             bytes([255, 255, 96, 255]), bytes([96, 255, 96, 255]),
             bytes([96, 255, 255, 255]), bytes([96, 96, 255, 255]),
 
-            # rząd 5
             bytes([128, 128, 128, 255]), bytes([64, 64, 64, 255]),
             bytes([255, 0, 0, 255]), bytes([255, 128, 0, 255]),
             bytes([255, 255, 0, 255]), bytes([0, 255, 0, 255]),
             bytes([0, 255, 255, 255]), bytes([0, 0, 255, 255]),
 
-            # rząd 6
             bytes([96, 96, 96, 255]), bytes([32, 32, 32, 255]),
             bytes([192, 0, 0, 255]), bytes([192, 96, 0, 255]),
             bytes([192, 192, 0, 255]), bytes([0, 192, 0, 255]),
             bytes([0, 192, 192, 255]), bytes([0, 0, 192, 255]),
 
-            # rząd 7
             bytes([64, 64, 64, 255]), bytes([0, 0, 0, 255]),
             bytes([128, 0, 0, 255]), bytes([128, 64, 0, 255]),
             bytes([128, 128, 0, 255]), bytes([0, 128, 0, 255]),
             bytes([0, 128, 128, 255]), bytes([0, 0, 128, 255]),
 
-            # rząd 8
             bytes([32, 32, 32, 255]), bytes([16, 16, 16, 255]),
             bytes([64, 0, 0, 255]), bytes([64, 32, 0, 255]),
             bytes([64, 64, 0, 255]), bytes([0, 64, 0, 255]),
@@ -49,6 +44,10 @@ def get_palette() -> list[bytes]:
 
 
 def get_themes(transparency: int) -> dict:
+    """
+    Return a dict of color themes, each containing
+    RGBA bytes for various game elements.
+    """
     return {
         1: {
             'name': 'dgajowni',

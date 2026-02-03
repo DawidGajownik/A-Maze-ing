@@ -2,6 +2,7 @@ from enum import IntEnum
 
 
 class Key(IntEnum):
+    """Enum for key codes used in the game."""
     K_B = 98
     K_D = 100
     K_G = 103
@@ -18,6 +19,7 @@ class Key(IntEnum):
 
 
 class Numpad(IntEnum):
+    """Enum for key codes of numpad used in the game."""
     EIGHT = 65431
     TWO = 65433
     SIX = 65432
@@ -27,6 +29,7 @@ class Numpad(IntEnum):
 
 
 class Arrow(IntEnum):
+    """Enum for key codes of arrow keys used in the game."""
     LEFT = 65361
     UP = 65362
     RIGHT = 65363

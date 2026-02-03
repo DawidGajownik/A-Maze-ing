@@ -3,6 +3,21 @@ from typing import Callable, Optional
 
 
 class Brick:
+    """Brick texture generator used to render wall interiors.
+
+    The class generates a procedural brick texture represented as byte
+    rows (`rows_even`, `rows_odd`) and a `mortar` line used by the
+    renderer. It is parametrized by scale (`size`), transparency and
+    color helpers.
+
+    Args:
+        size: Cell size in pixels used to compute brick subdivisions.
+        transparency: Alpha level (0-255) applied to bricks/mortar.
+        darken: Callable that darkens a base color by a float factor.
+        color: Optional base RGB(A) bytes for bricks.
+        mortar_color: Optional RGBA bytes for mortar.
+    """
+
     def __init__(
             self, size: int, transparency: int,
             darken: Callable[[bytes, float], bytes],
@@ -25,6 +40,12 @@ class Brick:
         self.texture_create()
 
     def texture_create(self) -> None:
+        """Build internal texture rows (`rows_even`, `rows_odd`) and mortar.
+
+        This computes brick width/height, populates `rows_odd` and
+        `rows_even` with bytearrays representing horizontal lines of the
+        texture and prepares `self.mortar` for fast fills.
+        """
         self.brick_w = (self.size // self.bricks_in_row
                         - self.mortar_thickness_x)
         self.brick_h = self.size // self.rows_in_block

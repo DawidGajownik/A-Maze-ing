@@ -13,6 +13,14 @@ from pathlib import Path
 
 
 def get_usernames_from_home() -> list[str]:
+    """Return a list of usernames by scanning /home.
+
+    Scans the `/home` directory and returns names of entries that are
+    directories. Currently used to validate in-game intra names (commented).
+
+    Returns:
+        list[str]: Directory names under `/home`.
+    """
     return [
         p.name
         for p in Path("/home").iterdir()
@@ -21,6 +29,15 @@ def get_usernames_from_home() -> list[str]:
 
 
 def darken(color: bytes, factor: float) -> bytes:
+    """Return an RGBA color darkened by a factor.
+
+    Args:
+        color: 4-byte RGBA color.
+        factor: Multiplicative factor applied to RGB channels (0.0-1.0).
+
+    Returns:
+        bytes: New RGBA color with scaled RGB channels and original alpha.
+    """
     r, g, b, a = color
     r = int(r * factor)
     g = int(g * factor)
@@ -29,14 +46,36 @@ def darken(color: bytes, factor: float) -> bytes:
 
 
 def transparent(color: bytes, level: int) -> bytes:
+    """Return an RGBA color with updated alpha level.
+
+    Args:
+        color: 4-byte RGBA color.
+        level: New alpha value (0-255).
+
+    Returns:
+        bytes: RGBA color with modified alpha channel.
+    """
     r, g, b, a = color
     return bytes([r, g, b, level])
 
 
 class MazeVisualizer:
+    """Windowed visualizer that connects maze generation to a GUI.
+
+    The visualizer orchestrates maze generation animation, pathfinding
+    animation, user interaction (keyboard/mouse), theming and rendering
+    primitives (images, bricks) through the `mlx` binding.
+    """
 
     def __init__(
             self, maze: Maze, path_finder: PathFinder):
+        """Initialize the visualizer and load resources.
+
+        Args:
+            maze: The `Maze` object to visualize.
+            path_finder: The `PathFinder` instance used to compute paths and
+                provide step-by-step yields for animations.
+        """
         self.start_time = datetime.now()
         self.m = Mlx()
         self.mlx = self.m.mlx_init()
@@ -79,6 +118,11 @@ class MazeVisualizer:
         # self.usernames = get_usernames_from_home()
 
     def load_images(self) -> None:
+        """Load PNG assets (icons, start/finish) and set icon sizes.
+
+        Uses `mlx.mlx_png_file_to_image` to load UI icons into memory and
+        stores the returned image handles and sizes for later blitting.
+        """
         self.icon_size = self.get_icon_size()
         self.save: Tuple[Any, int, int]\
             = self.m.mlx_png_file_to_image(self.mlx, "pictures/save.png")
@@ -107,6 +151,11 @@ class MazeVisualizer:
             = self.m.mlx_png_file_to_image(self.mlx, "pictures/game_on.png")
 
     def load_start_and_finish_imgs(self) -> None:
+        """Load the start and finish marker images sized to current icon.
+
+        The images are reloaded when `icon_size` changes so they match current
+        maze scale.
+        """
         self.start: Tuple[Any, int, int]\
             = self.m.mlx_png_file_to_image(
             self.mlx, f"pictures/start{self.icon_size}.png")
@@ -115,6 +164,11 @@ class MazeVisualizer:
             self.mlx, f"pictures/finish{self.icon_size}.png")
 
     def create_elements(self) -> None:
+        """Create UI image elements used by the menu and palette.
+
+        Constructs small `Image` buffers (e.g., slider, corrector) and fills
+        them with baseline colors used as UI controls.
+        """
         self.create_brick()
         self.corrector = Image(
             self.m, self.mlx, self.win, self.maze,
@@ -136,6 +190,11 @@ class MazeVisualizer:
         self.create_color_palette()
 
     def create_background_images(self) -> None:
+        """Prepare background and overlay images used when rendering menu.
+
+        Sets up `Image` buffers for background, menu and transparency overlay
+        and fills them with default colors (often based on the current theme).
+        """
         self.strings_background = Image(
             self.m, self.mlx, self.win, self.maze,
             self.win.width // 8, self.win.height // 8)
@@ -159,6 +218,11 @@ class MazeVisualizer:
             self.colors['Background'], 0.6) * (len(self.menu_img.data) // 4)
 
     def create_blocks(self) -> None:
+        """Define vertical positions for color palette blocks in the menu.
+
+        Each block maps a palette row to a y-range used for click detection
+        inside `mouse_hook`.
+        """
         self.blocks = {
             '42': {
                 'start': self.win.height // 64,
@@ -191,6 +255,11 @@ class MazeVisualizer:
         }
 
     def set_images_and_position(self) -> None:
+        """Recompute positions and sizes used to place UI images in menu.
+
+        This should be called when window size, theme, or state changes so
+        icon placements stay consistent with the layout.
+        """
         self.images_with_height_and_width = {
             self.save[0]:
             {
@@ -244,6 +313,10 @@ class MazeVisualizer:
         }
 
     def set_palettes_data(self) -> None:
+        """Define mapping from palette name to display height multiplier.
+
+        The multiplier is used to layout palette descriptions in the menu.
+        """
         self.palettes_descriptions_with_height_multiplier = {
             "42": 1,
             "Grid found": 9,
@@ -255,6 +328,7 @@ class MazeVisualizer:
         }
 
     def set_menu_data(self) -> None:
+        """Generates strings to display in the menu."""
         self.menu_data = {
             "Y=" + str(self.maze.height):
                 {
@@ -294,6 +368,7 @@ class MazeVisualizer:
         }
 
     def show_enter_and_exit(self) -> None:
+        """Blit the start and finish images at maze entry and exit points."""
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr,
             self.start[0], self.enter_x, self.enter_y)
@@ -302,18 +377,29 @@ class MazeVisualizer:
             self.finish[0], self.exit_x, self.exit_y)
 
     def show_maze(self) -> None:
+        """Blit the maze image buffer to the window at the offset."""
         self.draw.draw_maze(
             self.m, self.mlx, self.maze, self.img,
             self.win, self.found, self.colors,
             self.brick_visible, self.brick, self.offset)
 
     def show_path(self, animation: bool) -> None:
+        """Render the current path onto the maze image buffer."""
         self.draw.draw_path(
                 self.m, self.mlx, self.maze, self.img,
                 self.path_img, self.final_path_img, self.win,
                 self.path, self.colors, self.offset, animation)
 
     def format_seconds(self, seconds: float, precision: int = 1) -> str:
+        """Format a floating point number of seconds into HH:MM:SS,ms style.
+
+        Args:
+            seconds: Total time in seconds.
+            precision: Number of fractional digits for seconds.
+
+        Returns:
+            str: Formatted string like "00:01:23,4".
+        """
         hours = int(seconds // 3600)
         minutes = int((seconds % 3600) // 60)
         secs = seconds % 60
@@ -323,16 +409,24 @@ class MazeVisualizer:
         return f"{hours:02d}:{minutes:02d}:{secs_formatted}"
 
     def draw_ready_maze_to_window(self) -> None:
+        """Blit the prepared maze image buffer to the window at the offset."""
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.img.ptr, 0, self.offset)
 
     def reset_final_path(self) -> None:
+        """
+        Reset path image buffers and reinitialize the pathfinder generator.
+        """
         self.path_img = Image(self.m, self.mlx, self.win, self.maze)
         self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
         self.final_path_img.data[:] = bytes([0])*len(self.final_path_img.data)
         self.finder = self.path_finder.find_path(self.maze)
 
     def draw_game(self) -> None:
+        """Render the game HUD and player's final path during game mode.
+
+        Displays elapsed time and draws the player's traced path.
+        """
         self.draw_ready_maze_to_window()
         self.final_path_img.data[:] = bytes([0])*len(self.final_path_img.data)
         if self.game_start_time is not None:
@@ -348,10 +442,21 @@ class MazeVisualizer:
         self.show_enter_and_exit()
 
     def create_player(self) -> None:
+        """Create the `Player` instance used for interactive game mode."""
         self.game_player = Player(self.maze)
         self.game_path: List[int] = self.game_player.path
 
     def draw_maze(self, vars: dict) -> None:
+        """Main loop hook: advance generator and render maze animation.
+
+        This function is registered with `mlx_loop_hook` and is invoked
+        frequently; it advances the maze generator when animating and
+        triggers drawing and menu updates.
+
+        Args:
+            vars: Arbitrary state forwarded by the mlx hook (contains "m",
+                  "mlx" and "win").
+        """
         if self.frozen:
             return
         if not self.maze_draw:
@@ -383,6 +488,11 @@ class MazeVisualizer:
             self.create_player()
 
     def draw_path(self) -> None:
+        """Compute and render the current path (instant or animated).
+
+        Uses `PathFinder.find_path_instant` for instant rendering or pulls
+        values from the pathfinder generator for animated mode.
+        """
         try:
             self.create_colors(255)
             if not self.animation:
@@ -398,6 +508,12 @@ class MazeVisualizer:
             return
 
     def create_color_palette(self) -> None:
+        """Rasterize the 8x8 color palette grid into the palette Image buffer.
+
+        The function builds a byte sequence representing palette swatches
+        and writes it into `self.colors_block.data` used for interactive
+        palette selection.
+        """
         data = self.colors_block_data
         leng = len(data)
         height = self.colors_block.height
@@ -466,6 +582,7 @@ class MazeVisualizer:
             1, int((width - 8.5 * self.segment_height) // 8) - 2)
 
     def put_palettes_descriptions(self) -> None:
+        """Render palette color names next to their respective color blocks."""
         for name, multiplier in (
                 self.palettes_descriptions_with_height_multiplier.items()
         ):
@@ -474,6 +591,7 @@ class MazeVisualizer:
                 self.win.height // 64 * multiplier, 0xFFFFFFFF, name)
 
     def show_menu(self) -> None:
+        """Render the menu overlay with icons, text and color palette."""
         # for multiplier in self.color_blocks_height_multipliers:
         #     self.m.mlx_put_image_to_window(
         #     self.mlx, self.win.ptr, self.colors_block.ptr,
@@ -498,6 +616,7 @@ class MazeVisualizer:
         # self.put_palettes_descriptions()
 
     def theme_changed(self) -> bool:
+        """Return True if the active theme colors differ from `self.colors`."""
         for a, b in zip(
                 self.themes[self.theme_idx].values(), self.colors.values()
         ):
@@ -506,6 +625,7 @@ class MazeVisualizer:
         return False
 
     def open_window(self, generator: MazeGenerator, seed: int) -> None:
+        """Open the visualizer window and start the main event loop."""
         self.gen = generator
         self.seed = seed
         self.show_menu()
@@ -521,6 +641,7 @@ class MazeVisualizer:
         self.m.mlx_loop(self.mlx)
 
     def mouse_hook(self, button: int, x: int, y: int, vars: dict) -> None:
+        """Handle mouse click events for UI interaction."""
         if self.cursor_over_slider(x, y):
             result = ((x - self.win.width // 128 * 119)
                       - self.corrector.width//2)
@@ -596,6 +717,7 @@ class MazeVisualizer:
         self.show_menu()
 
     def handle_game(self, key_pressed: Union[Key, Arrow]) -> None:
+        """Process player movement and check for game completion."""
         self.game_path = self.game_player.move(key_pressed)
         if self.game_start_time is None:
             self.game_start_time = datetime.now()
@@ -615,6 +737,7 @@ class MazeVisualizer:
                 "seed =", self.seed)
 
     def new_size_maze(self, x: int, y: int) -> None:
+        """Adjust maze dimensions and regenerate the maze accordingly."""
         self.maze.set_width(self.maze.width + x)
         self.maze.set_height(self.maze.height + y)
         if self.icon_size is not self.get_icon_size():
@@ -622,6 +745,7 @@ class MazeVisualizer:
         self.generate_new_maze(False)
 
     def key_hook(self, keycode: int, vars: dict) -> None:
+        """Handle keyboard events for UI interaction and game control."""
         m: Mlx = vars['m']
         win: Window = vars['win']
         mlx = vars['mlx']
@@ -757,6 +881,7 @@ class MazeVisualizer:
         self.set_images_and_position()
 
     def decrease_transparency(self) -> None:
+        """Decrease transparency level and update colors accordingly."""
         if self.transparency > 5:
             self.transparency -= 5
         elif self.transparency > 0:
@@ -764,6 +889,7 @@ class MazeVisualizer:
         self.create_colors()
 
     def increase_transparency(self) -> None:
+        """Increase transparency level and update colors accordingly."""
         if self.transparency < 5:
             self.transparency += 1
         elif self.transparency > 249:
@@ -773,10 +899,12 @@ class MazeVisualizer:
         self.create_colors()
 
     def set_theme(self) -> None:
+        """Apply the selected theme colors to `self.colors`."""
         self.colors = copy(self.themes[self.theme_idx])
         self.create_colors()
 
     def generate_new_maze(self, new_seed: bool) -> None:
+        """Regenerate the maze and reset all related state."""
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
         self.seed = randint(0, 99999) if new_seed else self.seed
@@ -802,11 +930,13 @@ class MazeVisualizer:
         self.draw_maze(self.vars)
 
     def create_brick(self) -> None:
+        """Initialize the Brick instance used for brick wall rendering."""
         self.brick = Brick(
             self.img.scale, self.transparency, darken,
             self.colors['Block found'], bytes([30, 30, 30, 30]))
 
     def set_start_and_finish_coordinates(self) -> None:
+        """Compute pixel coordinates for maze entry and exit images."""
         self.enter_x = (
             self.maze.entry % self.maze.width
             ) * self.img.scale + (
@@ -829,6 +959,7 @@ class MazeVisualizer:
                 )//3*2 + self.offset
 
     def create_colors(self, transparency: Optional[int] = None) -> None:
+        """Apply transparency to all colors in `self.colors`."""
         for color in self.colors:
             if color != 'name':
                 self.colors[color] = (
@@ -837,6 +968,7 @@ class MazeVisualizer:
                         transparency if transparency else self.transparency))
 
     def cursor_over_slider(self, x: int, y: int) -> bool:
+        """Return True if cursor is over the speed slider area."""
         return (self.win.width // 128 * 119 < x <
                 self.win.width // 128 * 119 + self.slider.width + 10
                 and self.win.height // 64 * 59 + self.slider.height < y <
@@ -844,6 +976,7 @@ class MazeVisualizer:
                 self.slider.height)
 
     def cursor_over_save_icon(self, x: int, y: int) -> bool:
+        """Return True if cursor is over the save icon area."""
         return (self.win.width // 64 * 61 < x <
                 self.win.width // 64 * 61 + self.save[1]
                 and self.win.height // 64 * 57 < y <
@@ -851,6 +984,7 @@ class MazeVisualizer:
                 self.save[2])
 
     def cursor_over_animation_icon(self, x: int, y: int) -> bool:
+        """Return True if cursor is over the animation icon area."""
         return (self.win.width // 64 * 62 < x <
                 self.win.width // 64 * 62 + self.animate[1]
                 and self.win.height // 64 * 57 < y <
@@ -858,6 +992,7 @@ class MazeVisualizer:
                 self.animate[2])
 
     def cursor_over_path_icon(self, x: int, y: int) -> bool:
+        """Return True if cursor is over the path icon area."""
         return (self.win.width // 64 * 61 < x <
                 self.win.width // 64 * 61 + self.animate[1]
                 and self.win.height // 64 * 61 < y <
@@ -865,6 +1000,7 @@ class MazeVisualizer:
                 self.animate[2])
 
     def cursor_over_game_icon(self, x: int, y: int) -> bool:
+        """Return True if cursor is over the game icon area."""
         return (self.win.width // 64 * 62 < x <
                 self.win.width // 64 * 62 + self.animate[1]
                 and self.win.height // 64 * 61 < y <
@@ -872,6 +1008,7 @@ class MazeVisualizer:
                 self.animate[2])
 
     def cursor_over_refresh_icon(self, x: int, y: int) -> bool:
+        """Return True if cursor is over the refresh icon area."""
         return (self.win.width // 64 * 63 < x <
                 self.win.width // 64 * 63 + self.refresh[1]
                 and self.win.height // 64 * 57 < y <
@@ -879,6 +1016,7 @@ class MazeVisualizer:
                 self.refresh[2])
 
     def cursor_over_play_or_pause_icon(self, x: int, y: int) -> bool:
+        """Return True if cursor is over the play/pause icon area."""
         return (self.win.width // 64 * 63 < x <
                 self.win.width // 64 * 63 + self.play[1]
                 and self.win.height // 64 * 59 < y <
@@ -886,6 +1024,7 @@ class MazeVisualizer:
                 self.play[2])
 
     def cursor_over_freeze_icon(self, x: int, y: int) -> bool:
+        """Return True if cursor is over the freeze icon area."""
         return (
                 self.win.width // 64 * 63 < x <
                 self.win.width // 64 * 63 + self.freeze[1]
@@ -894,6 +1033,10 @@ class MazeVisualizer:
                 self.freeze[2])
 
     def get_icon_size(self) -> int:
+        """Return icon size (in px) based on current cell scale.
+
+        Icons are selected from discrete buckets depending on `self.img.scale`.
+        """
         size = (
             10 if self.img.scale < 20 else
             15 if self.img.scale < 30 else
