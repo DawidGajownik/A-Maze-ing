@@ -37,17 +37,17 @@ class MazeGenerator:
         self.heart = heart
 
         if self.heart:
-            self.create_heart()
+            self._generate_heart_shape()
         if not (height > 6 and width > 8):
             raise ValueError("Maze is to small for the '42' sign.")
-        self.set_42()
-        self.is_entry_exit_valid(entry, exit)
-        self.set_neighbors()
-        self.remove_42_from_available()
+        self._set_42()
+        self._is_entry_exit_valid(entry, exit)
+        self._populate_neighbor_links()
+        self._clear_pattern_from_available()
         if self.heart:
-            self.remove_outline()
+            self._remove_maze_artifacts()
 
-    def is_entry_exit_valid(self, entry: int, exit: int) -> None:
+    def _is_entry_exit_valid(self, entry: int, exit: int) -> None:
         """
         Check if the entry and exit points are valid within the generated
             layout.
@@ -65,7 +65,7 @@ class MazeGenerator:
         if self.maze_map[exit] == 0xF or self.maze_map[exit] == 1:
             raise ValueError("Invalid end coordinates.")
 
-    def set_42(self) -> None:
+    def _set_42(self) -> None:
         """
         Carve a '42' pattern into the center of the maze.
         """
@@ -93,7 +93,7 @@ class MazeGenerator:
         self.maze_map[central_cell + 2 + self.width * 2] = 0xF
         self.maze_map[central_cell + 3 + self.width * 2] = 0xF
 
-    def set_neighbors(self) -> None:
+    def _populate_neighbor_links(self) -> None:
         """
         Pre-calculate the adjacency list for the maze grid.
         """
@@ -117,7 +117,7 @@ class MazeGenerator:
                         and self.maze_map[c + self.width] != 1):
                     self.neighbors[c].append(c + self.width)
 
-    def remove_42_from_available(self) -> None:
+    def _clear_pattern_from_available(self) -> None:
         """
         Remove cells occupied by the '42' pattern (or other obstacles) from
             the usable set.
@@ -141,7 +141,7 @@ class MazeGenerator:
                            maze.is_perfect, maze.heart,
                            maze.entry, maze.exit)
 
-        end = self.get_random_cell()
+        end = self._choose_random_cell()
         self.maze_map[end] = 0b1111
         self.found.add(end)
         path_found: bool = False
@@ -149,7 +149,7 @@ class MazeGenerator:
         i: int = 0
 
         while self.available_cells:
-            start = self.get_random_cell()
+            start = self._choose_random_cell()
             path.append(start)
 
             self.maze_map[start] = 16
@@ -157,21 +157,21 @@ class MazeGenerator:
 
             path_found = False
             while not path_found:
-                current_pos = self.move_at_random(current_pos, path)
+                current_pos = self._select_random_neighbor(current_pos, path)
                 if self.maze_map[current_pos] == -1:
                     self.maze_map[current_pos] = 16
-                    self.clear_last_path(current_pos, path)
+                    self._earase_loop(current_pos, path)
                 elif self.maze_map[current_pos] != 16:
                     path_found = True
 
                 maze.map = self.maze_map
                 i += 1
 
-            self.save_new_path(path)
+            self._store_valid_path(path)
             path.clear()
 
         if not self.is_perfect:
-            self.create_loops()
+            self._create_non_perfect_maze()
 
         maze.map = self.maze_map
         return self.get_maze_str()
@@ -195,7 +195,7 @@ class MazeGenerator:
                            maze.is_perfect, maze.heart,
                            maze.entry, maze.exit)
 
-        end = self.get_random_cell()
+        end = self._choose_random_cell()
         self.maze_map[end] = 0b1111
         self.found.add(end)
         path_found: bool = False
@@ -203,7 +203,7 @@ class MazeGenerator:
         i: int = 0
 
         while self.available_cells:
-            start = self.get_random_cell()
+            start = self._choose_random_cell()
             path.append(start)
 
             self.maze_map[start] = 16
@@ -211,10 +211,10 @@ class MazeGenerator:
 
             path_found = False
             while not path_found:
-                current_pos = self.move_at_random(current_pos, path)
+                current_pos = self._select_random_neighbor(current_pos, path)
                 if self.maze_map[current_pos] == -1:
                     self.maze_map[current_pos] = 16
-                    self.clear_last_path(current_pos, path)
+                    self._earase_loop(current_pos, path)
                 elif self.maze_map[current_pos] != 16:
                     path_found = True
                 maze.map = self.maze_map
@@ -223,16 +223,16 @@ class MazeGenerator:
                 if visualize and i % self.visualisation_tempo == 0:
                     yield self.found, path
 
-            self.save_new_path(path)
+            self._store_valid_path(path)
             path.clear()
 
         if not self.is_perfect:
-            self.create_loops()
+            self._create_non_perfect_maze()
 
         maze.map = self.maze_map
         yield self.found, path
 
-    def create_loops(self) -> None:
+    def _create_non_perfect_maze(self) -> None:
         """
         Remove some walls to create loops in the maze (making it non-perfect).
         """
@@ -241,8 +241,8 @@ class MazeGenerator:
         for i, cell in enumerate(self.maze_map):
             if cell in end_blocks:
                 new_connection = self.maze_random.choice(self.neighbors[i])
-                direction = self.create_directions([i, new_connection])[0]
-                self.put_walls_in_cell(i, new_connection, direction)
+                direction = self._derive_path_directions([i, new_connection])[0]
+                self._update_walls_for_passage(i, new_connection, direction)
 
     def get_maze_str(self) -> str:
         """
@@ -261,7 +261,7 @@ class MazeGenerator:
 
         return "\n".join(lines)
 
-    def save_new_path(self, path: List[int]) -> None:
+    def _store_valid_path(self, path: List[int]) -> None:
         """
         Commit a valid random walk path to the maze structure.
 
@@ -269,7 +269,7 @@ class MazeGenerator:
             path (List[int]): The path of cells to add to the maze.
         """
         self.maze_map[path[0]] = 0xF
-        directions = self.create_directions(path)
+        directions = self._derive_path_directions(path)
 
         current = path[0]
 
@@ -278,12 +278,12 @@ class MazeGenerator:
             previous = current
             i += 1
             current = path[i]
-            self.put_walls_in_cell(previous, current, direction)
+            self._update_walls_for_passage(previous, current, direction)
 
         for cell in path:
             self.found.add(cell)
 
-    def create_directions(self, path: List[int]) -> List[Direction]:
+    def _derive_path_directions(self, path: List[int]) -> List[Direction]:
         """
         Determine the directions of movement along a path of cells.
 
@@ -314,9 +314,9 @@ class MazeGenerator:
 
         return directions
 
-    def put_walls_in_cell(self, previous: int,
-                          current: int,
-                          direction: Direction) -> None:
+    def _update_walls_for_passage(self, previous: int,
+                                  current: int,
+                                  direction: Direction) -> None:
         """
         Knock down walls between two cells to create a passage.
 
@@ -336,8 +336,8 @@ class MazeGenerator:
         current_cell = current_cell & ~(1 << direction.opposite.value)
         self.maze_map[current] = current_cell
 
-    def clear_last_path(self, current_pos: int,
-                        path: List[int]) -> None:
+    def _earase_loop(self, current_pos: int,
+                     path: List[int]) -> None:
         """
         Backtrack and erase the current path creation attempt
             (loop eradication).
@@ -353,7 +353,7 @@ class MazeGenerator:
             self.available_cells.add(cell)
             i -= 1
 
-    def move_at_random(self, current_pos: int,
+    def _select_random_neighbor(self, current_pos: int,
                        path: List[int]) -> int:
         """
         Choose a random neighbor to move to for the random walk.
@@ -380,7 +380,7 @@ class MazeGenerator:
 
         return (current_pos)
 
-    def get_random_cell(self) -> int:
+    def _choose_random_cell(self) -> int:
         """
         Pick a random cell from the available (unvisited) cells.
 
@@ -391,7 +391,7 @@ class MazeGenerator:
         self.available_cells.remove(cell)
         return (cell)
 
-    def create_heart(self) -> None:
+    def _generate_heart_shape(self) -> None:
         """
         Create a heart mask on the grid where cells outside the heart are
             marked as walls.
@@ -414,7 +414,7 @@ class MazeGenerator:
 
         self.maze_map = heart_map
 
-    def remove_outline(self) -> None:
+    def _remove_maze_artifacts(self) -> None:
         """
         Clean up outline artifacts for heart shaped mazes.
         """

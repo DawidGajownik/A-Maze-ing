@@ -7,6 +7,7 @@ The `mazegen` package is a standalone module designed for generating and solving
 To install the package, first build the distribution files:
 
 ```bash
+make install
 python3 setup.py sdist bdist_wheel
 ```
 
@@ -39,7 +40,7 @@ maze = Maze(width, height, entry_coord, exit_coord, is_perfect, heart_shape)
 # 2. Generate the Maze
 # Initialize the generator
 generator = MazeGenerator()
-seed = 123456 # Optional seed for reproducibility
+seed = 123456  # Optional seed for reproducibility
 
 # This populates the maze.map with the generated structure
 generator.create_maze_instant(maze, seed)
@@ -49,13 +50,23 @@ generator.create_maze_instant(maze, seed)
 # Each integer represents a cell and its wall configuration
 print(f"Maze Map: {maze.map}")
 
-# 4. Solve the Maze
+# 4. Get String Representation
+# You can also get a hex string representation of the maze
+maze_str = generator.get_maze_str()
+print(f"Maze String: \n{maze_str}")
+
+# 5. Solve the Maze
 # Initialize the pathfinder
 finder = PathFinder()
 
 # Find the shortest path (returns a list of cell indices)
 solution_path = finder.find_path_instant(maze)
 print(f"Solution Path: {solution_path}")
+
+# 6. Get Path as Directions
+# Convert the solution path to a string of directions (N, S, E, W)
+path_str = finder.get_str_path(solution_path)
+print(f"Path String: {path_str}")
 ```
 
 ## Parameters
@@ -92,6 +103,8 @@ The algorithmic core for generating maze structures.
     *   Generates a maze instantly using the given seed and populates the `maze` object. Returns the maze structure as a string.
 *   `create_maze(maze: Maze, seed: int, visualize: bool = False) -> Generator`
     *   A generator version of the creation process. Yields intermediate states `(found_cells, current_path)` for visualization purposes.
+*   `get_maze_str() -> str`
+    *   Returns the hex string representation of the generated maze.
 
 ### `class PathFinder`
 The solver engine.
@@ -100,4 +113,6 @@ The solver engine.
     *   Solves the maze instantly (BFS) and returns the solution path as a list of cell indices.
 *   `find_path(manager: Maze) -> Generator`
     *   A generator version of the solver. Yields visited cells during search and eventually yields the solution path.
+*   `get_str_path(path: List[int]) -> str`
+    *   Converts a list of path cell indices into a string of cardinal directions ('N', 'S', 'E', 'W').
 
