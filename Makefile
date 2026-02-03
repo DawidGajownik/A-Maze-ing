@@ -10,7 +10,7 @@ BIN = $(VENV)/bin
 install:
 	$(PYTHON) -m venv $(VENV)
 	$(BIN)/$(PIP) install --upgrade pip
-	$(BIN)/$(PIP) install flake8 mypy setuptools wheel build mlx-2.2-py3-none-any.whl
+	$(BIN)/$(PIP) install flake8 mypy mlx-2.2-py3-none-any.whl
 	@if [ -f requirements.txt ]; then $(BIN)/$(PIP) install -r requirements.txt; fi
 
 # Execute the main script

@@ -8,7 +8,8 @@ from sys import argv
 def check_entry_exit_coordinates(entry: Tuple[int, int], exit: Tuple[int, int],
                                  width: int, height: int) -> None:
     """
-    Validate that entry and exit coordinates are within maze bounds and distinct.
+    Validate that entry and exit coordinates are within
+    maze bounds and distinct.
 
     Args:
         entry (Tuple[int, int]): The (x, y) coordinates of the entry point.
@@ -29,14 +30,16 @@ def check_entry_exit_coordinates(entry: Tuple[int, int], exit: Tuple[int, int],
 
 def check_true_false(key: str, config: Dict[str, str]) -> None:
     """
-    Verify that a configuration key's value is a boolean string ('True' or 'False').
+    Verify that a configuration key's value is a boolean string
+    ('True' or 'False').
 
     Args:
         key (str): The dictionary key to check.
         config (Dict[str, str]): The configuration dictionary.
 
     Raises:
-        ValueError: If the value associated with the key is not 'True' or 'False'.
+        ValueError: If the value associated with the key is not 'True'
+            or 'False'.
     """
     if not (config[key].lower() == "true"
             or config[key].lower() == "false"):
@@ -78,11 +81,12 @@ def check_if_key_is_valid(key: str) -> None:
 
 def main() -> None:
     """
-    Main function to load config, generate maze, save output, and verify visualization.
+    Main function to load config, generate maze, save output, and
+    verify visualization.
 
     Reads configuration from a file specified in command line arguments,
-    validates parameters, generates the maze and solution, writes to an output file,
-    and launches the visualizer.
+    validates parameters, generates the maze and solution, writes to an
+    output file, and launches the visualizer.
     """
     try:
         config = {}

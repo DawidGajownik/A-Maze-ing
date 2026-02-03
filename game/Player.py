@@ -26,10 +26,12 @@ class Player:
         Update the player's position based on the key pressed.
 
         Args:
-            key_pressed (Union[Key, Arrow]): The key or arrow pressed by the user.
+            key_pressed (Union[Key, Arrow]): The key or arrow pressed by
+                the user.
 
         Returns:
-            List[int]: The current path of the player as a list of cell indices.
+            List[int]: The current path of the player as a list of cell
+                indices.
         """
         direction = self._get_direction(key_pressed)
 
@@ -56,7 +58,8 @@ class Player:
             key_pressed (Union[Key, Arrow]): The input key.
 
         Returns:
-            Union[Direction, None]: The corresponding Direction if valid, else None.
+            Union[Direction, None]: The corresponding Direction if valid,
+                else None.
         """
         direction: Union[Direction, None] = None
 
