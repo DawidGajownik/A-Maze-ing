@@ -562,7 +562,11 @@ class MazeVisualizer:
 
         if self.cursor_over_animation_icon(x, y):
             self.animation = not self.animation
-
+            if self.path_finding and self.animation:
+                self.path_img = Image(self.m, self.mlx, self.win, self.maze)
+                self.final_path_img = Image(self.m, self.mlx, self.win, self.maze)
+                self.final_path_img.data[:] = bytes([0]) * len(self.final_path_img.data)
+                self.finder = self.path_finder.find_path(self.maze)
             if not self.path_finding or self.maze_draw:
                 self.generator = (
                     self.gen.create_maze(self.maze, self.seed, self.animation))
@@ -812,7 +816,7 @@ class MazeVisualizer:
     def generate_new_maze(self, new_seed: bool) -> None:
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.background_img.ptr, 0, 0)
-        self.seed = randint(0, 999999999999999999999999) if new_seed else self.seed
+        self.seed = randint(0, 99999) if new_seed else self.seed
         self.generator = (
             self.gen.create_maze(self.maze, self.seed, self.animation))
         self.finder = self.path_finder.find_path(self.maze)
