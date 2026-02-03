@@ -1,7 +1,7 @@
 from random import randint
 from mazegen import MazeGenerator, PathFinder, Maze
 from utils import MazeVisualizer
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Set
 from sys import argv
 
 
@@ -26,6 +26,15 @@ def check_output_file_type(file_name: str) -> None:
         raise ValueError("Invalid output file type. ('*.txt' required)")
 
 
+def check_if_key_is_valid(key: str) -> None:
+    keys: Set[str] = {
+        "WIDTH", "HEIGHT","ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT", "HEART", "SEED"
+        }
+
+    if key not in keys:
+        raise KeyError(f"Invalid key: '{key}'")
+
+
 def main() -> None:
     try:
         config = {}
@@ -36,9 +45,14 @@ def main() -> None:
                     continue
 
                 key, value = line.split("=", 1)
+                check_if_key_is_valid(key)
                 config[key.strip()] = value.strip()
     except FileNotFoundError:
         print(f"Invalid file name: '{argv[1]}'")
+        return
+
+    except KeyError as e:
+        print(e)
         return
 
     try:
@@ -82,7 +96,7 @@ def main() -> None:
         visualizer.open_window(generator, seed)
 
     except KeyError as e:
-        print(f"Brakuje klucza w configu: {e}")
+        print(f"Key missing from '{argv[1]}': {e}")
     except ValueError as e:
         print(e)
 
