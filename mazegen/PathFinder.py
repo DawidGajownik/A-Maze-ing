@@ -9,7 +9,7 @@ class PathFinder:
     """
     A class used to find paths within a maze.
     """
-    def prepare_data(self, manager: Maze) -> None:
+    def _prepare_data(self, manager: Maze) -> None:
         """
         Extract necessary data from the Maze object.
 
@@ -32,7 +32,7 @@ class PathFinder:
         Returns:
             list[int]: The path from entry to exit as a list of cell indices.
         """
-        self.prepare_data(manager)
+        self._prepare_data(manager)
 
         maze_connections: Dict[int, int] = {}
         queue: Deque[int] = deque([self.entry])
@@ -45,7 +45,7 @@ class PathFinder:
             if current == self.exit:
                 break
 
-            for neighbor in self.find_neighbors(current):
+            for neighbor in self._collect_accessible_neighbors(current):
                 if neighbor not in visited:
                     queue.append(neighbor)
                     visited.add(neighbor)
@@ -78,7 +78,7 @@ class PathFinder:
             str: A string representation of the directions (N, S, E, W) for
                 the path.
         """
-        self.prepare_data(manager)
+        self._prepare_data(manager)
 
         maze_connections: Dict[int, int] = {}
         queue: Deque[int] = deque([self.entry])
@@ -92,7 +92,7 @@ class PathFinder:
             if current == self.exit:
                 break
 
-            for neighbor in self.find_neighbors(current):
+            for neighbor in self._collect_accessible_neighbors(current):
                 if neighbor not in visited:
                     queue.append(neighbor)
                     visited.add(neighbor)
@@ -108,7 +108,7 @@ class PathFinder:
         path.reverse()
         yield path
 
-    def find_neighbors(self, current: int) -> Generator[int,
+    def _collect_accessible_neighbors(self, current: int) -> Generator[int,
                                                         None,
                                                         None]:
         """
