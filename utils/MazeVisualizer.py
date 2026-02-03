@@ -1,7 +1,7 @@
 from copy import copy
 from datetime import datetime
 from random import randint
-from typing import Tuple, Any, List, Optional
+from typing import Tuple, Any, List, Optional, Union
 from mlx import Mlx
 from mazegen import PathFinder, MazeGenerator, Maze
 from objects import Image, Window, Brick
@@ -591,8 +591,8 @@ class MazeVisualizer:
         self.maze_draw = True
         self.show_menu()
 
-    def handle_game(self, arrow: Arrow):
-        self.game_path = self.game_player.move(arrow)
+    def handle_game(self, key_pressed: Union[Key, Arrow]) -> None:
+        self.game_path = self.game_player.move(key_pressed)
         if self.game_start_time is None:
             self.game_start_time = datetime.now()
         if self.game_path[-1] == self.maze.exit:
@@ -743,9 +743,6 @@ class MazeVisualizer:
                 self.animation = True
         self.show_enter_and_exit()
         self.set_images_and_position()
-
-    def is_key(self, key: str, code: int) -> bool:
-        return self.keys[key] == code
 
     def decrease_transparency(self) -> None:
         if self.transparency > 5:

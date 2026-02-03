@@ -63,7 +63,7 @@ class PathFinder:
         return path
 
     def find_path(
-            self, manager: Maze) -> Generator[int | list[int], None, None]:
+            self, manager: Maze) -> Generator[int, None, list[int]]:
         """
         Find the shortest path and yield intermediate steps for visualization.
 
@@ -106,7 +106,7 @@ class PathFinder:
 
         path.append(self.entry)
         path.reverse()
-        yield path
+        return path
 
     def _collect_accessible_neighbors(self, current: int) -> Generator[int,
                                                                        None,
