@@ -110,8 +110,12 @@ def main() -> None:
     try:
         width = int(config["WIDTH"])
         height = int(config["HEIGHT"])
+        if width <= 1 or height <= 1:
+            raise ValueError("Width, height cannot be negative.")
         entry_str = str((config["ENTRY"])).split(",")
         exit_str = str((config["EXIT"])).split(",")
+        if len(entry_str) != 2 or len(exit_str) != 2:
+            raise ValueError("entry, exit accepts (x,y).")
         entry = (int(entry_str[0]), int(entry_str[1]))
         exit = (int(exit_str[0]), int(exit_str[1]))
 
