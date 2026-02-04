@@ -9,30 +9,30 @@ class PathFinder:
     """
     A class used to find paths within a maze.
     """
-    def _prepare_data(self, manager: Maze) -> None:
+    def _prepare_data(self, maze: Maze) -> None:
         """
         Extract necessary data from the Maze object.
 
         Args:
-            manager (Maze): The Maze object to extract data from.
+            maze (Maze): The Maze object to extract data from.
         """
-        self.entry: int = manager.entry
-        self.exit: int = manager.exit
-        self.height: int = manager.height
-        self.width: int = manager.width
-        self.maze: list[Any] = manager.map
+        self.entry: int = maze.entry
+        self.exit: int = maze.exit
+        self.height: int = maze.height
+        self.width: int = maze.width
+        self.maze: list[Any] = maze.map
 
-    def find_path_instant(self, manager: Maze) -> List[int]:
+    def find_path_instant(self, maze: Maze) -> List[int]:
         """
         Find the shortest path from entry to exit in the maze instantly (BFS).
 
         Args:
-            manager (Maze): The maze to solve.
+            maze (Maze): The maze to solve.
 
         Returns:
             list[int]: The path from entry to exit as a list of cell indices.
         """
-        self._prepare_data(manager)
+        self._prepare_data(maze)
 
         maze_connections: Dict[int, int] = {}
         queue: Deque[int] = deque([self.entry])
@@ -63,13 +63,13 @@ class PathFinder:
         return path
 
     def find_path(
-            self, manager: Maze
+            self, maze: Maze
             ) -> Generator[List[int], None, None]:
         """
         Find the shortest path and yield intermediate steps for visualization.
 
         Args:
-            manager (Maze): The maze to solve.
+            maze (Maze): The maze to solve.
 
         Yields:
             int | list[int]: Visited cells during search, and finally the
@@ -79,7 +79,7 @@ class PathFinder:
             str: A string representation of the directions (N, S, E, W) for
                 the path.
         """
-        self._prepare_data(manager)
+        self._prepare_data(maze)
 
         maze_connections: Dict[int, int] = {}
         queue: Deque[int] = deque([self.entry])

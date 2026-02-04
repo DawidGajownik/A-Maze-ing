@@ -1,20 +1,19 @@
+*This project has been created as part of the 42 curriculum by Dawid Gajownik (dgajowni) and Sebastian Kolsut (skolsut)*
+
 # mazegen Package Documentation
 
 The `mazegen` package is a standalone module designed for generating and solving mazes. It provides a flexible API for creating randomized mazes with customizable parameters and finding solutions.
 
 ## Installation
 
-To install the package, first build the distribution files:
+To install the package, you can use the provided wheel file or the source distribution:
 
 ```bash
-make install
-python3 setup.py sdist bdist_wheel
-```
+# Install using wheel
+pip install mazegen-1.0.0-py3-none-any.whl
 
-Then install the generated wheel file using pip:
-
-```bash
-pip install dist/mazegen-1.0.0-py3-none-any.whl
+# Or install using source distribution
+pip install mazegen-1.0.0.tar.gz
 ```
 
 ## Usage
@@ -109,10 +108,17 @@ The algorithmic core for generating maze structures.
 ### `class PathFinder`
 The solver engine.
 
-*   `find_path_instant(manager: Maze) -> List[int]`
+*   `find_path_instant(maze: Maze) -> List[int]`
     *   Solves the maze instantly (BFS) and returns the solution path as a list of cell indices.
-*   `find_path(manager: Maze) -> Generator`
+*   `find_path(maze: Maze) -> Generator`
     *   A generator version of the solver. Yields visited cells during search and eventually yields the solution path.
 *   `get_str_path(path: List[int]) -> str`
     *   Converts a list of path cell indices into a string of cardinal directions ('N', 'S', 'E', 'W').
 
+## Technical Details
+
+### Algorithm: Wilson's Algorithm
+The `mazegen` package implements **Wilson's Algorithm** for maze generation.
+
+- **Unbiased Distribution:** It generates a "Uniform Spanning Tree," ensuring that all possible perfect mazes of a given size are equally likely to be generated.
+- **Loop-Erased Random Walks:** The algorithm relies on loop-erased random walks to populate the maze structure.
