@@ -1,4 +1,4 @@
-from random import Random
+from random import Random, randint
 from typing import List, Union, Set, Generator, Optional, Tuple
 from .Direction import Direction
 from .Maze import Maze
@@ -126,17 +126,21 @@ class MazeGenerator:
             if cell == 0xF or cell == 1:
                 self.available_cells.remove(i)
 
-    def create_maze_instant(self, maze: Maze, seed: int) -> str:
+    def create_maze_instant(
+            self, maze: Maze, seed: Optional[int] = None) -> str:
         """
         Generate the maze instantly without visualization steps.
 
         Args:
             maze (Maze): The Maze object to populate.
-            seed (int): The random seed.
+            seed (Optional[int]): The random seed. If None, a random one
+                is generated.
 
         Returns:
             str: A string representation of the generated maze.
         """
+        if seed is None:
+            seed = randint(0, 10000000000)
         self._prepare_data(seed, maze.width, maze.height,
                            maze.is_perfect, maze.heart,
                            maze.entry, maze.exit)
@@ -176,7 +180,7 @@ class MazeGenerator:
         maze.map = self.maze_map
         return self.get_maze_str()
 
-    def create_maze(self, maze: Maze, seed: int,
+    def create_maze(self, maze: Maze, seed: Optional[int] = None,
                     visualize: Optional[bool] = False) -> Generator[
                         Tuple[set[int], List[int]], None, None]:
         """
@@ -184,13 +188,16 @@ class MazeGenerator:
 
         Args:
             maze (Maze): The Maze object to populate.
-            seed (int): The random seed.
+            seed (Optional[int]): The random seed. If None, a random one
+                is generated.
             visualize (bool, optional): If True, yields intermediate states.
 
         Yields:
             Tuple[set[int], List[int]]: Current set of found cells and the
                 current random path being carved.
         """
+        if seed is None:
+            seed = randint(0, 10000000000)
         self._prepare_data(seed, maze.width, maze.height,
                            maze.is_perfect, maze.heart,
                            maze.entry, maze.exit)

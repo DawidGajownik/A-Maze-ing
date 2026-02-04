@@ -246,9 +246,9 @@ The data structure representing the maze.
 #### `class MazeGenerator`
 The algorithmic core for generating maze structures.
 
-*   `create_maze_instant(maze: Maze, seed: int) -> str`
-    *   Generates a maze instantly using the given seed and populates the `maze` object. Returns the maze structure as a string.
-*   `create_maze(maze: Maze, seed: int, visualize: bool = False) -> Generator`
+*   `create_maze_instant(maze: Maze, seed: Optional[int] = None) -> str`
+    *   Generates a maze instantly using the given seed (optional) and populates the `maze` object. Returns the maze structure as a string.
+*   `create_maze(maze: Maze, seed: Optional[int] = None, visualize: bool = False) -> Generator`
     *   A generator version of the creation process. Yields intermediate states `(found_cells, current_path)` for visualization purposes.
 *   `get_maze_str() -> str`
     *   Returns the hex string representation of the generated maze.
