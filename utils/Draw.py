@@ -469,7 +469,7 @@ class Draw():
             cls, m: Mlx, mlx: Any, maze: Maze, img: Image,
             path_img: Image, final_path_img: Image, win: Window,
             path_list: List[int], colors: dict, offset: int,
-            animation: bool
+            animation: bool, game_mode = bool
     ) -> None:
         """Draw a path or a single path cell to the window.
 
@@ -486,7 +486,7 @@ class Draw():
             offset: Vertical offset for the maze image in the window.
             animation: If True, blit after each path segment to animate.
         """
-        if len(path_list) == 1:
+        if len(path_list) == 1 and not game_mode:
             x = path_list[0] % maze.width
             y = path_list[0] // maze.width
             _put_block(x, y, path_img, colors['Snake'][:3] + bytes([40]), 0)

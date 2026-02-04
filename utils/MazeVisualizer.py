@@ -388,7 +388,7 @@ class MazeVisualizer:
         self.draw.draw_path(
                 self.m, self.mlx, self.maze, self.img,
                 self.path_img, self.final_path_img, self.win,
-                self.path, self.colors, self.offset, animation)
+                self.path, self.colors, self.offset, animation, False)
 
     def format_seconds(self, seconds: float, precision: int = 1) -> str:
         """Format a floating point number of seconds into HH:MM:SS,ms style.
@@ -438,7 +438,7 @@ class MazeVisualizer:
         self.draw.draw_path(
             self.m, self.mlx, self.maze, self.img,
             self.path_img, self.final_path_img, self.win,
-            self.game_path, self.colors, self.offset, False)
+            self.game_path, self.colors, self.offset, False, True)
         self.show_enter_and_exit()
 
     def create_player(self) -> None:
@@ -484,6 +484,10 @@ class MazeVisualizer:
             self.time = datetime.now()
 
         except StopIteration:
+            self.create_colors(255)
+            self.show_maze()
+            self.show_enter_and_exit()
+            self.create_colors(self.transparency)
             self.maze_draw = False
             self.create_player()
 
@@ -493,6 +497,8 @@ class MazeVisualizer:
         Uses `PathFinder.find_path_instant` for instant rendering or pulls
         values from the pathfinder generator for animated mode.
         """
+        if not self.path_finding:
+            return
         try:
             self.create_colors(255)
             if not self.animation:
@@ -503,6 +509,7 @@ class MazeVisualizer:
             self.show_menu()
             self.show_path(self.animation)
             self.show_enter_and_exit()
+            self.create_colors(255)
 
         except StopIteration:
             return
@@ -640,6 +647,17 @@ class MazeVisualizer:
         self.m.mlx_loop_hook(self.mlx, self.draw_maze, self.vars)
         self.m.mlx_loop(self.mlx)
 
+    def handle_animation(self) -> None:
+        if self.path_finding and self.animation:
+            self.reset_final_path()
+        if not self.path_finding or self.maze_draw:
+            self.generator = (
+                self.gen.create_maze(self.maze, self.seed, self.animation))
+        if not self.animation:
+            self.create_colors(255)
+        else:
+            self.create_colors(self.transparency)
+
     def mouse_hook(self, button: int, x: int, y: int, vars: dict) -> None:
         """Handle mouse click events for UI interaction."""
         if self.cursor_over_slider(x, y):
@@ -677,15 +695,7 @@ class MazeVisualizer:
                 self.reset_final_path()
         if self.cursor_over_animation_icon(x, y):
             self.animation = not self.animation
-            if self.path_finding and self.animation:
-                self.reset_final_path()
-            if not self.path_finding or self.maze_draw:
-                self.generator = (
-                    self.gen.create_maze(self.maze, self.seed, self.animation))
-            if not self.animation:
-                self.create_colors(255)
-            else:
-                self.create_colors(self.transparency)
+            
 
         x_start = self.win.width // 64 * 60 + self.segment_height
         x_end = x_start + self.segment_width * 8 + self.segment_height * 16
@@ -709,10 +719,10 @@ class MazeVisualizer:
                             self.palette[row*8+col], self.transparency)
         self.time = datetime.now()
         if not self.animation or self.path_finding:
-            self.create_colors(255)
+            #self.create_colors(255)
             self.show_maze()
         self.show_enter_and_exit()
-
+        self.handle_animation()
         self.maze_draw = True
         self.show_menu()
 
@@ -927,6 +937,7 @@ class MazeVisualizer:
         self.load_start_and_finish_imgs()
         self.create_player()
         self.game_start_time = None
+        self.create_colors(self.transparency)
         self.draw_maze(self.vars)
 
     def create_brick(self) -> None:
