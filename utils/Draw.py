@@ -469,7 +469,7 @@ class Draw():
             cls, m: Mlx, mlx: Any, maze: Maze, img: Image,
             path_img: Image, final_path_img: Image, win: Window,
             path_list: List[int], colors: dict, offset: int,
-            animation: bool, game_mode = bool
+            animation: bool, game_mode: bool
     ) -> None:
         """Draw a path or a single path cell to the window.
 

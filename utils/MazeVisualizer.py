@@ -205,12 +205,6 @@ class MazeVisualizer:
             self.win.width // 8 * 7, self.win.height)
         self.background_img.data[:]\
             = bytes([0, 0, 0, 255]) * (len(self.background_img.data) // 4)
-        self.background_img_with_transparency = Image(
-            self.m, self.mlx, self.win, self.maze,
-            self.win.width, self.win.height)
-        self.background_img_with_transparency.data[:] = bytes(
-            [0, 0, 0, self.transparency]) * (
-                len(self.background_img_with_transparency.data) // 4)
         self.menu_img = Image(
             self.m, self.mlx, self.win, self.maze,
             self.win.width // 8, self.win.height)
@@ -469,10 +463,6 @@ class MazeVisualizer:
             if not self.paused:
                 self.found = next(self.generator)
                 self.gen.visualisation_tempo = self.slider_x
-
-            self.m.mlx_put_image_to_window(
-                self.mlx, self.win.ptr,
-                self.background_img_with_transparency.ptr, 0, 0)
             self.show_menu()
             if not self.animation:
                 self.create_colors(255)
@@ -695,8 +685,6 @@ class MazeVisualizer:
                 self.reset_final_path()
         if self.cursor_over_animation_icon(x, y):
             self.animation = not self.animation
-            
-
         x_start = self.win.width // 64 * 60 + self.segment_height
         x_end = x_start + self.segment_width * 8 + self.segment_height * 16
         block_width = (x_end - x_start)/8
@@ -719,7 +707,6 @@ class MazeVisualizer:
                             self.palette[row*8+col], self.transparency)
         self.time = datetime.now()
         if not self.animation or self.path_finding:
-            #self.create_colors(255)
             self.show_maze()
         self.show_enter_and_exit()
         self.handle_animation()
