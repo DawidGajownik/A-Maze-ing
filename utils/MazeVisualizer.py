@@ -339,16 +339,21 @@ class MazeVisualizer:
                     'width': self.win.width // 64 * 57,
                     'height': self.win.height // 64 * 58
                 },
+            "(N)ew maze":
+                {
+                    'width': self.win.width // 64 * 61,
+                    'height': self.win.height // 64 * 63
+                },
             "Tr=" + str(self.transparency) + "(w/s)":
                 {
                     'width': self.win.width // 64 * 57,
                     'height': self.win.height // 64 * 61
                 },
-            "Th=" + str(self.theme_idx) + "(a/d)":
-                {
-                    'width': self.win.width // 64 * 57,
-                    'height': self.win.height // 64 * 62
-                },
+            # "Th=" + str(self.theme_idx) + "(a/d)":
+            #     {
+            #         'width': self.win.width // 64 * 57,
+            #         'height': self.win.height // 64 * 62
+            #     },
             "Thi=" + str(self.img.thickness) + "(+/-)":
                 {
                     'width': self.win.width // 64 * 57,
@@ -590,10 +595,10 @@ class MazeVisualizer:
     def show_menu(self) -> None:
         """Render the menu overlay with icons, text and color palette."""
         # for multiplier in self.color_blocks_height_multipliers:
-        #     self.m.mlx_put_image_to_window(
-        #     self.mlx, self.win.ptr, self.colors_block.ptr,
-        #     self.win.width // 64 * 60,
-        #     self.win.height // 64 * multiplier)
+        self.m.mlx_put_image_to_window(
+            self.mlx, self.win.ptr, self.colors_block.ptr,
+            self.win.width // 64 * 60,
+            self.win.height // 64 * 9)
         self.set_images_and_position()
         self.m.mlx_put_image_to_window(
             self.mlx, self.win.ptr, self.strings_background.ptr,
@@ -671,7 +676,6 @@ class MazeVisualizer:
                 self.animation = False
                 self.path_finding = False
                 self.create_player()
-
             else:
                 self.game_start_time = None
 
@@ -685,6 +689,7 @@ class MazeVisualizer:
                 self.reset_final_path()
         if self.cursor_over_animation_icon(x, y):
             self.animation = not self.animation
+            self.handle_animation()
         x_start = self.win.width // 64 * 60 + self.segment_height
         x_end = x_start + self.segment_width * 8 + self.segment_height * 16
         block_width = (x_end - x_start)/8
@@ -709,7 +714,6 @@ class MazeVisualizer:
         if not self.animation or self.path_finding:
             self.show_maze()
         self.show_enter_and_exit()
-        self.handle_animation()
         self.maze_draw = True
         self.show_menu()
 

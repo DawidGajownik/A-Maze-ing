@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by Dawid Gajownik (dgajowni) and Sebastian Kolsut (skolsut)*
+*This project has been created as part of the 42 curriculum by dgajowni, skolsut*
 
 # A-Maze-ing
 
@@ -126,6 +126,10 @@ The planning evolved as we realized the potential for better visual feedback, le
 Throughout the development process, we encountered and overcame several key obstacles:
 - **Integration and Cooperation:** Initially, we faced difficulties in synchronizing our distinct parts of the project. However, by establishing a clearer modular architecture and improving our collaborative workflow, we were able to seamlessly integrate the core generation logic with the visualization engine.
 - **Performance Optimization:** Execution speed was a significant concern in the early stages. Both the maze generation algorithm and the real-time rendering system required extensive refinement. Through iterative adjustments and optimizations, we significantly improved the application's performance, ensuring a smooth experience even during high-speed generations and complex visual updates.
+
+### What Could Be Improved
+- Further optimization of the rendering pipeline for extremely large mazes.
+- Extending the solver to support multiple pathfinding algorithms for comparison.
 
 ### Tools Used
 - **Python 3:** Primary programming language.

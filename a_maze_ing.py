@@ -102,7 +102,9 @@ def main() -> None:
     except FileNotFoundError:
         print(f"Invalid file name: '{argv[1]}'")
         return
-
+    except ValueError as e:
+        print(f"Invalid line in '{argv[1]}'. {e}")
+        return
     except KeyError as e:
         print(e)
         return
@@ -110,8 +112,6 @@ def main() -> None:
     try:
         width = int(config["WIDTH"])
         height = int(config["HEIGHT"])
-        if width <= 1 or height <= 1:
-            raise ValueError("Width, height cannot be negative.")
         entry_str = str((config["ENTRY"])).split(",")
         exit_str = str((config["EXIT"])).split(",")
         if len(entry_str) != 2 or len(exit_str) != 2:
