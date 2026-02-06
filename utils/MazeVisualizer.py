@@ -656,11 +656,22 @@ class MazeVisualizer:
     def mouse_hook(self, button: int, x: int, y: int, vars: dict) -> None:
         """Handle mouse click events for UI interaction."""
         if self.cursor_over_slider(x, y):
-            result = ((x - self.win.width // 128 * 119)
-                      - self.corrector.width//2)
-            result = result * 100 // self.slider.width
-            result = result if result <= 100 else 100
-            self.slider_x = result if result >= 1 else 1
+            if button == 1:
+                result = ((x - self.win.width // 128 * 119)
+                          - self.corrector.width//2)
+                result = result * 100 // self.slider.width
+                result = result if result <= 100 else 100
+                self.slider_x = result if result >= 1 else 1
+            if button == 5:
+                if self.slider_x > 5:
+                    self.slider_x -= 5
+                else:
+                    self.slider_x = 1
+            if button == 4:
+                if self.slider_x <= 95:
+                    self.slider_x += 5
+                else:
+                    self.slider_x = 100
             self.gen.visualisation_tempo = self.slider_x
         if self.theme_changed() and self.cursor_over_save_icon(x, y):
             self.themes[self.theme_idx] = copy(self.colors)
