@@ -25,6 +25,13 @@ Changing these parameters directly affects the brick size and overall appearance
 
 Overall, the project combines algorithmic maze generation with interactive gameplay and advanced visual effects, emphasizing both technical correctness and aesthetic flexibility.
 
+## Showcase
+
+### Maze generation 
+![Maze generation](assets/maze.gif)
+### Path finding 
+![Path finding ](assets/path.gif)
+
 ## Instructions
 
 
